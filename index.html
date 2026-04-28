@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Digital Electronics — Study Guide</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- SIDEBAR NAV -->
+<nav id="sidebar">
+  <div id="nav-header">
+    <span class="nav-label">ECE</span>
+    <h1>Digital Electronics</h1>
+    <p>4th Year Exam Prep</p>
+  </div>
+  <ul id="nav-links">
+    <li><a href="#s0" class="nav-item active" data-section="s0"><span class="num">00</span> Power &amp; Circuits</a></li>
+    <li><a href="#s1" class="nav-item" data-section="s1"><span class="num">01</span> Binary &amp; Logic</a></li>
+    <li><a href="#s2" class="nav-item" data-section="s2"><span class="num">02</span> Logic Gates</a></li>
+    <li><a href="#s3" class="nav-item" data-section="s3"><span class="num">03</span> Boolean Algebra</a></li>
+    <li><a href="#s4" class="nav-item" data-section="s4"><span class="num">04</span> Minimization &amp; K-Maps</a></li>
+    <li><a href="#s5" class="nav-item" data-section="s5"><span class="num">05</span> Flip-Flops</a></li>
+    <li><a href="#s6" class="nav-item" data-section="s6"><span class="num">06</span> Counters &amp; Registers</a></li>
+    <li><a href="#s7" class="nav-item" data-section="s7"><span class="num">07</span> State Machines</a></li>
+    <li><a href="#s8" class="nav-item" data-section="s8"><span class="num">08</span> A/D &amp; D/A Conversion</a></li>
+    <li><a href="#s9" class="nav-item" data-section="s9"><span class="num">09</span> Memory &amp; Processors</a></li>
+    <li><a href="lab_esp32.html" class="nav-item"><span class="num">L1</span> ESP32 Systems Lab ↗</a></li>
+  </ul>
+  <div id="progress-block">
+    <div id="progress-label">Quiz Progress: <span id="pct">0%</span></div>
+    <div id="progress-bar"><div id="progress-fill"></div></div>
+  </div>
+</nav>
+
+<div id="hamburger" onclick="toggleSidebar()">&#9776;</div>
+
+<!-- MAIN CONTENT -->
+<main id="content">
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SECTION 0: POWER & CIRCUITS -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="s0" class="topic-section">
+  <div class="section-header">
+    <span class="tag">Embedded Systems Foundation</span>
+    <h2>Power &amp; Electricity in Digital Circuits</h2>
+    <p class="subtitle">Before digital logic, understand the physical layer — voltage, current, and power govern every embedded decision.</p>
+  </div>
+
+  <div class="flow-banner">🔗 This section underpins every section that follows — TTL voltage levels, pull-up resistors, and power dissipation appear throughout the course.</div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>Ohm's Law &amp; Kirchhoff's Laws</h3>
+      <ul>
+        <li><strong>V = IR</strong> — Voltage equals current × resistance.</li>
+        <li><strong>KVL:</strong> Sum of voltages around any closed loop = 0.</li>
+        <li><strong>KCL:</strong> Sum of currents entering a node = sum leaving.</li>
+        <li><em>Embedded relevance:</em> Pull-up resistors, current-limiting for LEDs, and bus termination all apply KVL/KCL directly.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Power in Digital Circuits</h3>
+      <ul>
+        <li><strong>P = IV = V²/R = I²R</strong></li>
+        <li>Digital ICs dissipate power in two forms: <strong>static</strong> (leakage) and <strong>dynamic</strong> (switching).</li>
+        <li><strong>Dynamic power:</strong> P<sub>dyn</sub> = α·C·V<sub>DD</sub>²·f — where α = activity factor, C = capacitance, f = clock frequency.</li>
+        <li><em>Reducing V<sub>DD</sub> is the most effective power-saving technique</em> (quadratic effect).</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Voltage Levels &amp; Logic Standards</h3>
+      <ul>
+        <li><strong>TTL (5V):</strong> LOW = 0–1V, HIGH = 2.5–5V.</li>
+        <li><strong>CMOS (3.3V / 1.8V):</strong> Common in modern embedded systems.</li>
+        <li>Voltage margins matter — noise can corrupt logic if margins are thin.</li>
+        <li>Never directly connect TTL output to CMOS input without level-shifting.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Pull-up &amp; Pull-down Resistors</h3>
+      <ul>
+        <li><strong>Pull-up</strong>: Connects pin to V<sub>CC</sub>; forces HIGH when pin floats.</li>
+        <li><strong>Pull-down</strong>: Connects pin to GND; forces LOW when pin floats.</li>
+        <li>With switch open and 1kΩ pull-up to +5V: I = 0, so V<sub>pin</sub> = +5V (HIGH).</li>
+        <li>With switch closed: V<sub>pin</sub> = 0V, I = 5mA through resistor.</li>
+        <li><em>Critical for embedded I²C, SPI, and GPIO design.</em></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Decoupling Capacitors</h3>
+      <ul>
+        <li>Placed close to IC power pins (V<sub>CC</sub> to GND).</li>
+        <li>Supply instantaneous current during switching transients.</li>
+        <li>Typical values: 100nF ceramic + 10µF bulk per IC.</li>
+        <li>Absence causes supply noise → logic glitches in embedded systems.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Ground Planes &amp; Signal Integrity</h3>
+      <ul>
+        <li>Solid ground plane reduces impedance and EMI.</li>
+        <li><strong>Ground bounce:</strong> Simultaneous switching outputs (SSO) cause transient ground shifts.</li>
+        <li>Keep high-speed digital traces short and impedance-controlled (typically 50Ω).</li>
+        <li>Separate analog and digital ground planes; join at single point.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="formula-block">
+    <div class="formula-row"><span>Ohm's Law</span><code>V = I × R</code></div>
+    <div class="formula-row"><span>Power</span><code>P = V × I = V²/R = I²R</code></div>
+    <div class="formula-row"><span>Dynamic Power</span><code>P_dyn = α · C · V_DD² · f</code></div>
+    <div class="formula-row"><span>Pull-up current (switch closed)</span><code>I = V_CC / R</code></div>
+  </div>
+
+  <div class="quiz-block" id="q-s0">
+    <h3>⚡ Section Quiz — Power &amp; Circuits</h3>
+    <div class="quiz-questions" id="quiz-s0"></div>
+    <button class="btn-check" onclick="checkQuiz('s0')">Check Answers</button>
+    <div class="quiz-result" id="result-s0"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SECTION 1: BINARY & LOGIC -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="s1" class="topic-section">
+  <div class="section-header">
+    <span class="tag">Chapter 1</span>
+    <h2>Binary Concepts &amp; Number Systems</h2>
+    <p class="subtitle">All digital computation reduces to two voltage states. Mastering number representations is the foundation of every circuit design decision.</p>
+  </div>
+
+  <div class="flow-banner">🔗 Binary arithmetic feeds directly into ALU design, memory addressing, and ADC/DAC resolution (Section 8).</div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>Why Binary?</h3>
+      <ul>
+        <li>Transistors operate as switches — two stable states: ON / OFF.</li>
+        <li>Noise immunity: two states are far enough apart to withstand voltage perturbations.</li>
+        <li>Benefits: storage, perfect reproduction, flawless transmission.</li>
+        <li>Trade-off: analog signal needs multiple bits (≥10 bits for 0.1% accuracy) → more transmission lines.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Binary Logic States</h3>
+      <table class="mini-table">
+        <tr><th>Boolean</th><th>Algebra</th><th>+True Voltage</th><th>−True Voltage</th></tr>
+        <tr><td>True</td><td>1</td><td>HIGH (H)</td><td>LOW (L)</td></tr>
+        <tr><td>False</td><td>0</td><td>LOW (L)</td><td>HIGH (H)</td></tr>
+      </table>
+      <p><strong>Positive-true convention:</strong> HIGH = True = 1.<br>
+      <strong>Negative-true convention:</strong> bar over label (e.g. <code>S̄</code>), LOW = True.</p>
+    </div>
+    <div class="card">
+      <h3>Unsigned Binary</h3>
+      <ul>
+        <li>Positional notation: each bit = 2<sup>n</sup>.</li>
+        <li>Example: 01001111₂ = 64+8+4+2+1 = 79₁₀</li>
+        <li>Max value for n bits: <strong>2ⁿ − 1</strong></li>
+        <li>To convert decimal→binary: divide by 2, collect remainders in reverse.</li>
+        <li>MSB = highest power; LSB = lowest power.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>BCD — Binary Coded Decimal</h3>
+      <ul>
+        <li>Each decimal digit encoded separately in 4 bits.</li>
+        <li>79 → 7=0111, 9=1001 → <strong>01111001 (BCD)</strong> ≠ 01001111 (unsigned)</li>
+        <li>Useful for decimal displays (7-segment, LCDs).</li>
+        <li>Wastes bit combinations (1010–1111 unused per nibble).</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Negative Numbers: 2's Complement</h3>
+      <ul>
+        <li><strong>Sign-magnitude:</strong> MSB = sign bit. Simple to read; bad for arithmetic.</li>
+        <li><strong>2's Complement:</strong> N + (−N) = 0 (with overflow discarded).</li>
+        <li>Form: flip all bits, then add 1. OR: −N = −2<sup>MSB</sup> + remaining bits.</li>
+        <li>Example (4-bit): 5 = 0101; −5 = 1010+1 = 1011. Check: 0101+1011 = 10000 → 0 ✓</li>
+        <li>Both addition and multiplication work naturally.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Hexadecimal</h3>
+      <ul>
+        <li>Base-16 — groups 4 bits into one symbol (0–9, A–F).</li>
+        <li>79₁₀ = 4F₁₆ (4=0100, F=1111).</li>
+        <li>Memory addresses, register values always shown in hex.</li>
+        <li>Embedded: 0xFF, 0x1A3F are typical firmware patterns.</li>
+      </ul>
+      <table class="mini-table">
+        <tr><th>Dec</th><th>Bin</th><th>Hex</th><th>Dec</th><th>Bin</th><th>Hex</th></tr>
+        <tr><td>10</td><td>1010</td><td>A</td><td>13</td><td>1101</td><td>D</td></tr>
+        <tr><td>11</td><td>1011</td><td>B</td><td>14</td><td>1110</td><td>E</td></tr>
+        <tr><td>12</td><td>1100</td><td>C</td><td>15</td><td>1111</td><td>F</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="formula-block">
+    <div class="formula-row"><span>Max unsigned (n bits)</span><code>2ⁿ − 1</code></div>
+    <div class="formula-row"><span>2's complement of N</span><code>~N + 1  (flip bits, add 1)</code></div>
+    <div class="formula-row"><span>Hex digit value</span><code>4 binary bits per hex digit</code></div>
+  </div>
+
+  <div class="quiz-block" id="q-s1">
+    <h3>⚡ Section Quiz — Binary &amp; Number Systems</h3>
+    <div class="quiz-questions" id="quiz-s1"></div>
+    <button class="btn-check" onclick="checkQuiz('s1')">Check Answers</button>
+    <div class="quiz-result" id="result-s1"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SECTION 2: LOGIC GATES -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="s2" class="topic-section">
+  <div class="section-header">
+    <span class="tag">Chapter 2</span>
+    <h2>Logic Gates &amp; Truth Tables</h2>
+    <p class="subtitle">Gates are the physical realization of Boolean operations. Every combinational circuit reduces to combinations of these primitives.</p>
+  </div>
+
+  <div class="flow-banner">🔗 Gate behavior → Boolean Algebra (Section 3) → Minimization (Section 4) → actual circuit implementation.</div>
+
+  <div class="gate-grid">
+    <div class="gate-card">
+      <div class="gate-name">AND</div>
+      <div class="gate-expr">Q = AB</div>
+      <table class="tt"><tr><th>A</th><th>B</th><th>Q</th></tr>
+        <tr><td>0</td><td>0</td><td class="out0">0</td></tr>
+        <tr><td>1</td><td>0</td><td class="out0">0</td></tr>
+        <tr><td>0</td><td>1</td><td class="out0">0</td></tr>
+        <tr><td>1</td><td>1</td><td class="out1">1</td></tr>
+      </table>
+      <p class="gate-note">Output HIGH only when ALL inputs HIGH.</p>
+    </div>
+    <div class="gate-card">
+      <div class="gate-name">OR</div>
+      <div class="gate-expr">Q = A + B</div>
+      <table class="tt"><tr><th>A</th><th>B</th><th>Q</th></tr>
+        <tr><td>0</td><td>0</td><td class="out0">0</td></tr>
+        <tr><td>1</td><td>0</td><td class="out1">1</td></tr>
+        <tr><td>0</td><td>1</td><td class="out1">1</td></tr>
+        <tr><td>1</td><td>1</td><td class="out1">1</td></tr>
+      </table>
+      <p class="gate-note">Output HIGH when ANY input HIGH.</p>
+    </div>
+    <div class="gate-card">
+      <div class="gate-name">NAND</div>
+      <div class="gate-expr">Q = <span class="bar">AB</span></div>
+      <table class="tt"><tr><th>A</th><th>B</th><th>Q</th></tr>
+        <tr><td>0</td><td>0</td><td class="out1">1</td></tr>
+        <tr><td>1</td><td>0</td><td class="out1">1</td></tr>
+        <tr><td>0</td><td>1</td><td class="out1">1</td></tr>
+        <tr><td>1</td><td>1</td><td class="out0">0</td></tr>
+      </table>
+      <p class="gate-note"><strong>Universal gate</strong> — any logic realized with NAND only.</p>
+    </div>
+    <div class="gate-card">
+      <div class="gate-name">NOR</div>
+      <div class="gate-expr">Q = <span class="bar">A+B</span></div>
+      <table class="tt"><tr><th>A</th><th>B</th><th>Q</th></tr>
+        <tr><td>0</td><td>0</td><td class="out1">1</td></tr>
+        <tr><td>1</td><td>0</td><td class="out0">0</td></tr>
+        <tr><td>0</td><td>1</td><td class="out0">0</td></tr>
+        <tr><td>1</td><td>1</td><td class="out0">0</td></tr>
+      </table>
+      <p class="gate-note"><strong>Universal gate</strong> — any logic realized with NOR only.</p>
+    </div>
+    <div class="gate-card">
+      <div class="gate-name">XOR</div>
+      <div class="gate-expr">Q = A ⊕ B</div>
+      <table class="tt"><tr><th>A</th><th>B</th><th>Q</th></tr>
+        <tr><td>0</td><td>0</td><td class="out0">0</td></tr>
+        <tr><td>1</td><td>0</td><td class="out1">1</td></tr>
+        <tr><td>0</td><td>1</td><td class="out1">1</td></tr>
+        <tr><td>1</td><td>1</td><td class="out0">0</td></tr>
+      </table>
+      <p class="gate-note">HIGH when inputs <em>differ</em>. Core of adders.</p>
+    </div>
+    <div class="gate-card">
+      <div class="gate-name">XNOR</div>
+      <div class="gate-expr">Q = <span class="bar">A⊕B</span></div>
+      <table class="tt"><tr><th>A</th><th>B</th><th>Q</th></tr>
+        <tr><td>0</td><td>0</td><td class="out1">1</td></tr>
+        <tr><td>1</td><td>0</td><td class="out0">0</td></tr>
+        <tr><td>0</td><td>1</td><td class="out0">0</td></tr>
+        <tr><td>1</td><td>1</td><td class="out1">1</td></tr>
+      </table>
+      <p class="gate-note">HIGH when inputs are <em>equal</em>. Comparator circuits.</p>
+    </div>
+    <div class="gate-card">
+      <div class="gate-name">INV (NOT)</div>
+      <div class="gate-expr">Q = <span class="bar">A</span></div>
+      <table class="tt"><tr><th>A</th><th>Q</th></tr>
+        <tr><td>0</td><td class="out1">1</td></tr>
+        <tr><td>1</td><td class="out0">0</td></tr>
+      </table>
+      <p class="gate-note">Inverts input. Not realizable from AND/OR alone.</p>
+    </div>
+    <div class="gate-card">
+      <div class="gate-name">BUFFER</div>
+      <div class="gate-expr">Q = A</div>
+      <table class="tt"><tr><th>A</th><th>Q</th></tr>
+        <tr><td>0</td><td class="out0">0</td></tr>
+        <tr><td>1</td><td class="out1">1</td></tr>
+      </table>
+      <p class="gate-note">Restores signal drive strength. Bus drivers in embedded systems.</p>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>Why NAND/NOR are universal:</strong> AND and OR gates cannot produce inversion — so no combination can substitute for NOT, NAND, or NOR. NAND and NOR, however, can each implement every other gate type. Chip fabricators prefer NAND-based designs (fewer transistors per gate in CMOS).
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>XOR from AND/OR/INV</h3>
+      <p>A ⊕ B = <span class="bar">A</span>B + A<span class="bar">B</span></p>
+      <p>Verify: when A=1,B=0 → <span class="bar">A</span>=0, A<span class="bar">B</span>=1·1=1 → Q=1 ✓</p>
+    </div>
+    <div class="card">
+      <h3>XOR from 4 NAND gates</h3>
+      <p>A ⊕ B = <span class="overline">A·(<span class="overline">AB</span>)</span> · <span class="overline">B·(<span class="overline">AB</span>)</span></p>
+      <p>Useful: NAND is the only available gate in many standard cell libraries.</p>
+    </div>
+    <div class="card">
+      <h3>INV from NOR</h3>
+      <p>Connect both NOR inputs together: Q = <span class="bar">A+A</span> = <span class="bar">A</span> → Inverter realized.</p>
+    </div>
+  </div>
+
+  <div class="quiz-block">
+    <h3>⚡ Section Quiz — Logic Gates</h3>
+    <div class="quiz-questions" id="quiz-s2"></div>
+    <button class="btn-check" onclick="checkQuiz('s2')">Check Answers</button>
+    <div class="quiz-result" id="result-s2"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SECTION 3: BOOLEAN ALGEBRA -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="s3" class="topic-section">
+  <div class="section-header">
+    <span class="tag">Chapter 2</span>
+    <h2>Boolean Algebra &amp; DeMorgan's Theorems</h2>
+    <p class="subtitle">Boolean algebra provides the mathematical framework to analyze, simplify, and transform logic expressions before hardware implementation.</p>
+  </div>
+
+  <div class="flow-banner">🔗 Boolean identities enable algebraic minimization (Section 4); DeMorgan's enables gate substitution crucial in NAND-only designs.</div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>Core Boolean Identities</h3>
+      <table class="mini-table">
+        <tr><th>Identity</th><th>Expression</th></tr>
+        <tr><td>Idempotent</td><td>AA = A ; A+A = A</td></tr>
+        <tr><td>Complement</td><td>A·<span class="bar">A</span> = 0 ; A+<span class="bar">A</span> = 1</td></tr>
+        <tr><td>Double negation</td><td><span class="bar"><span class="bar">A</span></span> = A</td></tr>
+        <tr><td>Annulment</td><td>A·0 = 0 ; A+1 = 1</td></tr>
+        <tr><td>Identity</td><td>A·1 = A ; A+0 = A</td></tr>
+        <tr><td>Absorption</td><td>A+AB = A ; A(A+B) = A</td></tr>
+        <tr><td>Distributive</td><td>A(B+C) = AB+AC</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3>DeMorgan's Theorems</h3>
+      <p>Two critical identities for circuit transformation:</p>
+      <div class="formula-inline">
+        <div><strong>Theorem 1:</strong> <span class="bar">A+B</span> = <span class="bar">A</span>·<span class="bar">B</span></div>
+        <div><strong>Theorem 2:</strong> <span class="bar">A·B</span> = <span class="bar">A</span>+<span class="bar">B</span></div>
+      </div>
+      <p><strong>Rule:</strong> Change gate shape (AND↔OR) and invert all inputs and outputs.</p>
+      <p>NAND symbol with inverted inputs ≡ OR gate.<br>NOR symbol with inverted inputs ≡ AND gate.</p>
+    </div>
+    <div class="card">
+      <h3>Worked: XOR via DeMorgan</h3>
+      <p>Start: A ⊕ B = <span class="bar">A</span>B + A<span class="bar">B</span></p>
+      <p>Add AA̅=0, BB̅=0:</p>
+      <p>= A(<span class="bar">A</span>+<span class="bar">B</span>) + B(<span class="bar">A</span>+<span class="bar">B</span>)</p>
+      <p>Apply DeMorgan: (<span class="bar">A</span>+<span class="bar">B</span>) = <span class="bar">AB</span></p>
+      <p>= A·<span class="bar">AB</span> + B·<span class="bar">AB</span></p>
+      <p>Apply DeMorgan again → 4-NAND XOR.</p>
+    </div>
+    <div class="card">
+      <h3>Embedded Systems Application</h3>
+      <ul>
+        <li>FPGA synthesis tools apply Boolean minimization automatically.</li>
+        <li>Manual simplification reduces gate count → lower power, smaller die.</li>
+        <li>DeMorgan transforms NOR-based logic (preferred in some processes) to equivalent AND/OR forms.</li>
+        <li>Firmware bitmask operations use Boolean: <code>reg &amp;= ~(1&lt;&lt;n)</code> = clear bit n.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="quiz-block">
+    <h3>⚡ Section Quiz — Boolean Algebra</h3>
+    <div class="quiz-questions" id="quiz-s3"></div>
+    <button class="btn-check" onclick="checkQuiz('s3')">Check Answers</button>
+    <div class="quiz-result" id="result-s3"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SECTION 4: K-MAPS -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="s4" class="topic-section">
+  <div class="section-header">
+    <span class="tag">Chapter 2</span>
+    <h2>Logic Minimization &amp; Karnaugh Maps</h2>
+    <p class="subtitle">Raw truth-table expressions are inefficient. Minimization yields the simplest equivalent gate network — fewer gates means lower cost, power, and propagation delay.</p>
+  </div>
+
+  <div class="flow-banner">🔗 Minimized expressions feed directly into state machine logic design (Sections 7 & 6) and adder circuits.</div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>Two Minimization Strategies</h3>
+      <ol>
+        <li><strong>Algebraic:</strong> Apply Boolean identities. Suitable for any number of variables; can use software (Espresso, Quine-McCluskey).</li>
+        <li><strong>K-map:</strong> Visual grouping method. Efficient and intuitive for ≤4 inputs. Limited to ≤4 variables by hand.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h3>K-Map Rules</h3>
+      <ol>
+        <li>Arrange input combinations in <strong>Gray code</strong> order (one bit changes at a time).</li>
+        <li>Group 1s into rectangles of size 1, 2, 4, or 8 (powers of 2).</li>
+        <li>Larger groups → simpler (fewer literal) expressions.</li>
+        <li>Groups may overlap and wrap around edges.</li>
+        <li>OR all group expressions for the final SOP expression.</li>
+        <li>Alternatively, group 0s to get expression for <span class="bar">Q</span>.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h3>Example: 2-variable K-Map</h3>
+      <p>Truth table: A=0,B=0→1; A=0,B=1→1; A=1,B=0→0; A=1,B=1→1</p>
+      <table class="mini-table">
+        <tr><th>A\B</th><th>0</th><th>1</th></tr>
+        <tr><th>0</th><td class="out1">1</td><td class="out1">1</td></tr>
+        <tr><th>1</th><td class="out0">0</td><td class="out1">1</td></tr>
+      </table>
+      <p>Groups: top row (<span class="bar">A</span>) + right column (B). Result: <strong>Q = <span class="bar">A</span> + B</strong></p>
+      <p>Compare: direct SOP = <span class="bar">A</span><span class="bar">B</span>+<span class="bar">A</span>B+AB — 3 AND gates vs 1 INV + 1 OR.</p>
+    </div>
+    <div class="card">
+      <h3>Full Adder — K-Map Application</h3>
+      <p>3 inputs: Cin, a, b. Two outputs: S (sum), Cout (carry-out).</p>
+      <p><strong>S = Cin ⊕ (a ⊕ b)</strong></p>
+      <p><strong>Cout = ab + Cin(a + b)</strong></p>
+      <p>→ 2 OR gates + 2 AND gates for Cout.</p>
+      <p>Chained 1-bit adders form N-bit adders — each Cout<sub>i</sub> feeds Cin<sub>i+1</sub>.</p>
+    </div>
+    <div class="card">
+      <h3>3-bit Prime Number Detector</h3>
+      <p>Input: a₂a₁a₀ (0–7). Output Q=1 if prime (3, 5, 7). 0,1,2 assumed non-prime.</p>
+      <table class="mini-table">
+        <tr><th>a₂\a₁a₀</th><th>00</th><th>01</th><th>11</th><th>10</th></tr>
+        <tr><th>0</th><td>0</td><td>0</td><td class="out1">1</td><td>0</td></tr>
+        <tr><th>1</th><td>0</td><td class="out1">1</td><td class="out1">1</td><td>0</td></tr>
+      </table>
+      <p>Groups: {3,7} → a₁a₀; {5,7} → a₂a₀. Result: <strong>Q = a₀(a₁ + a₂)</strong></p>
+    </div>
+    <div class="card">
+      <h3>Multiplexer (MUX) Design</h3>
+      <p>4-bit MUX: 4 data inputs D₀–D₃, 2 address bits A₁A₀, output Q.</p>
+      <p><strong>Decoder truth table:</strong> address selects exactly one C<sub>i</sub>=1.</p>
+      <p><strong>Q = C₀D₀ + C₁D₁ + C₂D₂ + C₃D₃</strong></p>
+      <p>With ENABLE E: Q = E·(C₀D₀ + C₁D₁ + C₂D₂ + C₃D₃)</p>
+      <p>MUX converts parallel data → serial; DEMUX performs inverse.</p>
+      <p>n data bits → log₂n + 1 transmission lines (vs n lines without MUX).</p>
+    </div>
+  </div>
+
+  <div class="quiz-block">
+    <h3>⚡ Section Quiz — K-Maps &amp; Minimization</h3>
+    <div class="quiz-questions" id="quiz-s4"></div>
+    <button class="btn-check" onclick="checkQuiz('s4')">Check Answers</button>
+    <div class="quiz-result" id="result-s4"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SECTION 5: FLIP-FLOPS -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="s5" class="topic-section">
+  <div class="section-header">
+    <span class="tag">Chapter 3</span>
+    <h2>Flip-Flops &amp; Sequential Logic</h2>
+    <p class="subtitle">Flip-flops introduce <em>memory</em> — the circuit's output depends on both current input AND past state. This transitions circuits from combinational to sequential.</p>
+  </div>
+
+  <div class="flow-banner">🔗 Flip-flops are the elementary unit of registers (Section 6), counters (Section 6), and state machines (Section 7). Every synchronous embedded system depends on them.</div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>SR Latch (NOR-based)</h3>
+      <p>Two cross-coupled NOR gates. Output of each feeds input of other.</p>
+      <table class="mini-table">
+        <tr><th>S</th><th>R</th><th>Q</th><th>State</th></tr>
+        <tr><td>1</td><td>0</td><td>1</td><td>Set</td></tr>
+        <tr><td>0</td><td>1</td><td>0</td><td>Reset</td></tr>
+        <tr><td>0</td><td>0</td><td>Q<sub>prev</sub></td><td>Memory</td></tr>
+        <tr><td>1</td><td>1</td><td>—</td><td class="out0">AVOID</td></tr>
+      </table>
+      <p>S=R=1: both outputs forced to same value → ambiguous, forbidden.</p>
+    </div>
+    <div class="card">
+      <h3>Debounced Switch (SR Application)</h3>
+      <p>Mechanical switches bounce during contact → unintended multi-transitions.</p>
+      <p>SR latch with switch at A or B: bounce causes A=B=1 → "retain previous" state → Q unchanged → counter sees single clean pulse.</p>
+      <p><em>Embedded: every physical button/switch should be debounced — hardware SR or software delay.</em></p>
+    </div>
+    <div class="card">
+      <h3>Clocked SR Flip-Flop</h3>
+      <p>S,R only affect output when CLK = HIGH.</p>
+      <p>Interval between CLK pulses = "retain previous" state — provides synchronization.</p>
+      <p>Key concept: <strong>information can only change in sync with clock</strong>.</p>
+    </div>
+    <div class="card">
+      <h3>D-Type Transparent Flip-Flop</h3>
+      <p>Single data input D. Eliminates S=R=1 ambiguity.</p>
+      <p>While CLK=HIGH: Q follows D (transparent).</p>
+      <p>Jam Set (<span class="bar">S</span>) and Jam Reset (<span class="bar">R</span>) override D and CLK.</p>
+      <p><em>Problem:</em> if D transitions during CLK=HIGH, output may be ambiguous.</p>
+    </div>
+    <div class="card">
+      <h3>Edge-Triggered D Flip-Flop</h3>
+      <p>Latches D only at clock edge (rising or falling), not during entire HIGH level.</p>
+      <ul>
+        <li><strong>Positive-edge:</strong> latches on LOW→HIGH transition (TTL 7474).</li>
+        <li><strong>Negative-edge:</strong> latches on HIGH→LOW transition.</li>
+        <li>Requires 2–3 coupled SR stages internally.</li>
+      </ul>
+      <p><strong>Timing constraints:</strong></p>
+      <ul>
+        <li>t<sub>setup</sub> ≈ 20ns — D must be stable before clock edge.</li>
+        <li>t<sub>hold</sub> ≈ 3ns — D must remain stable after edge.</li>
+        <li>t<sub>prop</sub> ≈ 10ns — Q appears after edge.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>JK Flip-Flop</h3>
+      <table class="mini-table">
+        <tr><th>J</th><th>K</th><th>Q<sub>n</sub></th></tr>
+        <tr><td>1</td><td>0</td><td>1 (Set)</td></tr>
+        <tr><td>0</td><td>1</td><td>0 (Reset)</td></tr>
+        <tr><td>0</td><td>0</td><td>Q<sub>n-1</sub> (Hold)</td></tr>
+        <tr><td>1</td><td>1</td><td><span class="bar">Q</span><sub>n-1</sub> (Toggle)</td></tr>
+      </table>
+      <p>J=K=1 → Toggle. Enables divide-by-2 without extra logic. Used in ripple counters.</p>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>Embedded Timing Insight:</strong> At clock frequencies ≪100MHz, setup/hold/propagation delays are negligible. At modern microcontroller speeds (100MHz–1GHz+), these constraints dominate PCB layout decisions. Trace length differences between clock and data lines cause timing violations.
+  </div>
+
+  <div class="quiz-block">
+    <h3>⚡ Section Quiz — Flip-Flops</h3>
+    <div class="quiz-questions" id="quiz-s5"></div>
+    <button class="btn-check" onclick="checkQuiz('s5')">Check Answers</button>
+    <div class="quiz-result" id="result-s5"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SECTION 6: COUNTERS & REGISTERS -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="s6" class="topic-section">
+  <div class="section-header">
+    <span class="tag">Chapter 4</span>
+    <h2>Counters &amp; Registers</h2>
+    <p class="subtitle">Flip-flops chained together form registers (parallel memory) and counters (sequential state traversal) — fundamental to every embedded peripheral.</p>
+  </div>
+
+  <div class="flow-banner">🔗 Registers → data storage in processors; Counters → timers, PWM, baud rate generation; Both are foundational to state machines (Section 7).</div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>Divide-by-2 Counter</h3>
+      <p>D flip-flop with <span class="bar">Q</span> connected back to D input.</p>
+      <p>Each clock edge toggles Q → output frequency = input / 2.</p>
+      <p>JK with J=K=1 achieves same result with no external wiring.</p>
+      <p><em>Embedded: clock prescalers, timer resolution scaling.</em></p>
+    </div>
+    <div class="card">
+      <h3>Asynchronous (Ripple) Counter</h3>
+      <p>Chain of flip-flops: each FF clocked by output of previous.</p>
+      <p>4-bit ripple counter: FF₀ clocked by input, FF₁ by Q₀, FF₂ by Q₁, FF₃ by Q₂.</p>
+      <p><strong>Problem:</strong> LSB and MSB process different input pulses at high speed — ripple delay accumulates.</p>
+      <p>At high frequency: intermediate states create glitches (spurious decode outputs).</p>
+    </div>
+    <div class="card">
+      <h3>4-bit Data Register</h3>
+      <p>4 D flip-flops sharing a single CLK line.</p>
+      <p>All 4 bits latch simultaneously on CLK edge — atomic parallel capture.</p>
+      <p><em>Embedded: capture SPI/parallel bus data, hold ADC results, store GPIO snapshots.</em></p>
+    </div>
+    <div class="card">
+      <h3>Shift Register</h3>
+      <p>Chain of flip-flops: each Q feeds D of the next.</p>
+      <p>Each CLK cycle shifts data one position right.</p>
+      <ul>
+        <li><strong>Serial→Parallel:</strong> 4 serial bits in → 4 parallel bits Q₀–Q₃ after 4 clocks.</li>
+        <li><strong>Parallel→Serial:</strong> load 4 bits, shift out one per clock.</li>
+      </ul>
+      <p><em>Embedded: SPI interface is fundamentally a shift register. UART uses shift registers for framing.</em></p>
+    </div>
+  </div>
+
+  <div class="quiz-block">
+    <h3>⚡ Section Quiz — Counters &amp; Registers</h3>
+    <div class="quiz-questions" id="quiz-s6"></div>
+    <button class="btn-check" onclick="checkQuiz('s6')">Check Answers</button>
+    <div class="quiz-result" id="result-s6"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SECTION 7: STATE MACHINES -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="s7" class="topic-section">
+  <div class="section-header">
+    <span class="tag">Chapters 4 &amp; 6</span>
+    <h2>State Machines</h2>
+    <p class="subtitle">State machines are clocked sequential processors: next state depends on current state + inputs. Every digital system from traffic lights to CPUs is a state machine.</p>
+  </div>
+
+  <div class="flow-banner">🔗 State machines unify all previous concepts: flip-flops (memory), Boolean logic (next-state logic), K-maps (minimization). Replacing logic with ROM → microprocessor (Section 9).</div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>General State Machine Structure</h3>
+      <ul>
+        <li><strong>Data Register:</strong> n flip-flops storing present state.</li>
+        <li><strong>Combinational Logic / ROM:</strong> computes next state from present state + k inputs.</li>
+        <li><strong>Outputs:</strong> m bits derived from state (and possibly inputs).</li>
+        <li>CLK advances machine from present → next state.</li>
+      </ul>
+      <p>Minimum bits needed for ℓ states: n = ⌈log₂(ℓ)⌉</p>
+    </div>
+    <div class="card">
+      <h3>Design Procedure</h3>
+      <ol>
+        <li>Identify required states ℓ → determine bits n.</li>
+        <li>Draw state diagram: circles = states, arrows = transitions, labels = inputs/outputs.</li>
+        <li>Build truth table: n+k inputs, n+m outputs.</li>
+        <li>Apply K-map or Boolean minimization to each output.</li>
+        <li>Implement with flip-flops + gates (or ROM).</li>
+        <li>Handle all unused states — give them an exit path (avoid "frozen" machine).</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h3>Synchronous vs Asynchronous</h3>
+      <ul>
+        <li><strong>Synchronous:</strong> all FFs share one clock. Entire circuit changes state together. Predictable, glitch-free.</li>
+        <li><strong>Asynchronous (ripple):</strong> FFs clocked by each other's outputs. Simple but slow — glitches at high speed.</li>
+        <li>All serious embedded designs use synchronous state machines.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Example: Up/Down 2-bit Counter</h3>
+      <p>4 states (00, 01, 10, 11). 1 input u (u=1: count up, u=0: count down).</p>
+      <p>From truth table / K-map:</p>
+      <p><strong>D₁ = <span class="bar">u ⊕ (Q₀ ⊕ Q₁)</span>&nbsp;&nbsp; D₀ = <span class="bar">Q₀</span></strong></p>
+      <p>State diagram has 4 circles connected in a ring with directional arrows controlled by u.</p>
+    </div>
+    <div class="card">
+      <h3>Example: Divide-by-3 Counter</h3>
+      <p>3 states needed → 2 bits (4 possible states). State D=11 is unused.</p>
+      <p>State sequence: A(00)→B(01)→C(10)→A. Output p=1 at state B only.</p>
+      <p>Unused state D must transition to A to prevent lockup.</p>
+      <p><em>Lockup = power-on enters unused state, machine never exits → firmware equivalent of infinite loop with no watchdog.</em></p>
+    </div>
+    <div class="card">
+      <h3>ROM-based State Machine</h3>
+      <p>Replace combinational logic with a ROM lookup table.</p>
+      <p>Address = [present state bits | input bits]. Data word = [next state bits | output bits].</p>
+      <p>Example: divide-by-2-or-3 counter → 3-bit address (2 state + 1 input) → 8-location × 3-bit ROM.</p>
+      <p>Changing behavior = reprogramming ROM, not rewiring gates.</p>
+      <p><em>This IS the microprocessor model.</em></p>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>From State Machine → Microprocessor:</strong> With 8 input bits, machine can perform 2⁸ = 256 different operations per clock. Store the sequence of input bits in external memory (the program). Execute step-by-step. Add buses, registers, and I/O → full CPU. Every ARM Cortex-M in your embedded system is a state machine with millions of states.
+  </div>
+
+  <div class="quiz-block">
+    <h3>⚡ Section Quiz — State Machines</h3>
+    <div class="quiz-questions" id="quiz-s7"></div>
+    <button class="btn-check" onclick="checkQuiz('s7')">Check Answers</button>
+    <div class="quiz-result" id="result-s7"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SECTION 8: A/D & D/A -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="s8" class="topic-section">
+  <div class="section-header">
+    <span class="tag">Chapter 5</span>
+    <h2>Analog/Digital Conversion</h2>
+    <p class="subtitle">The interface between physical reality (analog) and digital computation. Every embedded sensor system depends on ADC quality and ADC/DAC selection.</p>
+  </div>
+
+  <div class="flow-banner">🔗 ADC resolution links to binary number representation (Section 1). SAR ADC uses counters (Section 6) and comparator logic. DAC uses op-amp inverting configuration (power section concepts).</div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>A/D Resolution</h3>
+      <ul>
+        <li>n-bit ADC → 2ⁿ discrete levels.</li>
+        <li>Resolution = 1/(2·2ⁿ) of full range. Example: 12-bit → 1/8192 ≈ 0.012%.</li>
+        <li><strong>Nyquist Theorem:</strong> f<sub>samp</sub> > 2·f<sub>max</sub>. Audio (20kHz) → sample at ≥40kHz (standard: 44kHz).</li>
+        <li>Undersampling causes aliasing — high-frequency content folds into baseband.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>DAC — R-2R Ladder</h3>
+      <p>Op-amp inverting config: V<sub>out</sub> = −(R<sub>f</sub>/R<sub>in</sub>)·V<sub>in</sub>.</p>
+      <p>Virtual ground: op-amp "−" input stays at 0V.</p>
+      <p>4-bit example: switches a₀–a₃ connect to 1.0V (HIGH) or GND (LOW).</p>
+      <p>Resistor values: R, 2R, 4R, 8R weight bits by their binary significance.</p>
+      <p><strong>R-2R ladder advantage:</strong> only two resistor values needed → easier to fabricate with matching precision.</p>
+      <p>1010₂ (=10) → I<sub>total</sub> = 1/R + 1/4R = 5/4R → V<sub>out</sub> = −5/4 V.</p>
+    </div>
+    <div class="card">
+      <h3>Flash ADC</h3>
+      <p>2ⁿ−1 comparators in parallel, each with threshold V<sub>th,i</sub>.</p>
+      <p>All compare simultaneously → fastest ADC type.</p>
+      <p>2-bit flash: 3 comparators, thresholds at 0.5V, 1.5V, 2.5V (for 0–3.5V range).</p>
+      <p>Resolution: ΔV/2ⁿ⁺¹.</p>
+      <p><strong>Trade-off:</strong> doubles hardware per additional bit → impractical above ~8 bits. Used in oscilloscopes, RF receivers.</p>
+    </div>
+    <div class="card">
+      <h3>Successive Approximation (SAR) ADC</h3>
+      <p>Binary search algorithm over n clock cycles for n-bit result.</p>
+      <ol>
+        <li>Start: set MSB=1, all others 0. Convert to analog via DAC.</li>
+        <li>Compare to V<sub>in</sub>: if DAC > V<sub>in</sub>, clear bit; else keep.</li>
+        <li>Move to next bit. Repeat n times.</li>
+      </ol>
+      <p>Example (8-bit, 0–10V, V<sub>in</sub>=7.09V): converges in exactly 8 clock cycles.</p>
+      <p><strong>Embedded:</strong> most microcontroller ADCs (STM32, AVR, PIC) use SAR. Typical: 12-bit, 1 MSPS.</p>
+    </div>
+    <div class="card">
+      <h3>Single/Dual Slope ADC</h3>
+      <p><strong>Single slope:</strong> Charge capacitor from constant current source; count time until V<sub>cap</sub> = V<sub>in</sub>. Time ∝ V<sub>in</sub>.</p>
+      <p><strong>Dual slope:</strong> Charge capacitor proportional to V<sub>in</sub> for fixed time τ, then discharge at fixed I₀; measure discharge time Δt = βV<sub>in</sub>.</p>
+      <p>Advantages: result independent of C value; integrates away 60Hz noise.</p>
+      <p><strong>Use:</strong> multimeters, precision instruments. Slow but extremely accurate.</p>
+    </div>
+    <div class="card">
+      <h3>ADC Comparison for Embedded Design</h3>
+      <table class="mini-table">
+        <tr><th>Type</th><th>Speed</th><th>Accuracy</th><th>Cost</th></tr>
+        <tr><td>Flash</td><td>Fastest</td><td>Low–Med</td><td>High</td></tr>
+        <tr><td>SAR</td><td>Medium</td><td>High</td><td>Low</td></tr>
+        <tr><td>Sigma-Delta</td><td>Slow</td><td>Highest</td><td>Medium</td></tr>
+        <tr><td>Dual Slope</td><td>Slowest</td><td>Very High</td><td>Low</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="formula-block">
+    <div class="formula-row"><span>ADC Resolution</span><code>1 / (2 · 2ⁿ) of full scale</code></div>
+    <div class="formula-row"><span>Nyquist</span><code>f_samp &gt; 2 · f_max</code></div>
+    <div class="formula-row"><span>DAC output (inverting)</span><code>V_out = −(R_f/R_in) · V_in</code></div>
+    <div class="formula-row"><span>Flash comparators needed</span><code>2ⁿ − 1</code></div>
+    <div class="formula-row"><span>Dual slope result</span><code>Δt = β · V_in</code></div>
+  </div>
+
+  <div class="quiz-block">
+    <h3>⚡ Section Quiz — A/D &amp; D/A Conversion</h3>
+    <div class="quiz-questions" id="quiz-s8"></div>
+    <button class="btn-check" onclick="checkQuiz('s8')">Check Answers</button>
+    <div class="quiz-result" id="result-s8"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SECTION 9: MEMORY & PROCESSORS -->
+<!-- ═══════════════════════════════════════════ -->
+<section id="s9" class="topic-section">
+  <div class="section-header">
+    <span class="tag">Chapter 7</span>
+    <h2>Memories &amp; Processors</h2>
+    <p class="subtitle">Memory is organized random-access storage. ROM-based state machines become microprocessors — the culmination of all previous concepts.</p>
+  </div>
+
+  <div class="flow-banner">🔗 Memory = registers (Section 6) + MUX/DEMUX (Section 4) + flip-flops (Section 5). ROM state machine (Section 7) generalizes to full processor.</div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>Memory Types</h3>
+      <table class="mini-table">
+        <tr><th>Type</th><th>Read</th><th>Write</th><th>Volatile</th></tr>
+        <tr><td>SRAM</td><td>✓</td><td>✓</td><td>Yes</td></tr>
+        <tr><td>DRAM</td><td>✓</td><td>✓</td><td>Yes (needs refresh)</td></tr>
+        <tr><td>ROM</td><td>✓</td><td>✗</td><td>No</td></tr>
+        <tr><td>PROM</td><td>✓</td><td>Once (fuse)</td><td>No</td></tr>
+        <tr><td>EPROM</td><td>✓</td><td>UV erase</td><td>No</td></tr>
+        <tr><td>EEPROM/Flash</td><td>✓</td><td>Electrically</td><td>No</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3>SRAM vs DRAM</h3>
+      <ul>
+        <li><strong>SRAM:</strong> Flip-flop array. Faster (~10ns). No refresh needed. More area per bit. Used for cache, embedded scratch RAM.</li>
+        <li><strong>DRAM:</strong> Capacitor array. Slower. Needs refresh every ~1ms (charge leaks). Higher density, cheaper per bit. Used for main system RAM.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>RAM Organization</h3>
+      <p>8×1 RAM structure: DEMUX (write path) + D flip-flops (storage) + MUX (read path) + 3-state buffer (output).</p>
+      <p>External signals: Address (a₂a₁a₀), Data In, WE (write enable), OE (output enable), Data Out.</p>
+      <p><strong>Write:</strong> assert address + data + WE → DEMUX selects FF → FF latches data.</p>
+      <p><strong>Read:</strong> assert address + OE → MUX selects FF output → 3-state buffer drives bus.</p>
+    </div>
+    <div class="card">
+      <h3>Memory Capacity &amp; Addressing</h3>
+      <ul>
+        <li>1 bit = 1 binary digit. 1 byte = 8 bits.</li>
+        <li>1K = 2¹⁰ = 1024 locations.</li>
+        <li>8K×16 RAM: 8192 locations × 16-bit words = 128KB total.</li>
+        <li>External connections: 4 + log₂(n) for RAM vs 1 + 2n for standalone registers.</li>
+        <li>Access time ~10ns typical for SRAM.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>From State Machine to Microprocessor</h3>
+      <p>ROM-based state machine: PS = ROM address; ROM data = NS + outputs.</p>
+      <p>Add external inputs → combined address → 2ⁿ possible operations per state.</p>
+      <p>Store input sequence externally (program memory) → fetch next instruction each clock.</p>
+      <p>This IS the Harvard/Von Neumann architecture: data memory + program memory + ALU + registers + I/O buses.</p>
+      <p><em>Your STM32 MCU is this architecture implemented in 2nm+ CMOS with millions of states.</em></p>
+    </div>
+    <div class="card">
+      <h3>Embedded Memory Hierarchy</h3>
+      <ul>
+        <li><strong>Registers:</strong> ~1 cycle. CPU-internal. Very limited.</li>
+        <li><strong>Cache (SRAM):</strong> 1–10 cycles. On-chip. Kilobytes to megabytes.</li>
+        <li><strong>Flash:</strong> 10–100 cycles (with cache). On/off chip. Program storage.</li>
+        <li><strong>DRAM:</strong> 100–300 cycles. Off-chip. OS + heap.</li>
+        <li><strong>eMMC/SD:</strong> Milliseconds. Mass storage.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="quiz-block">
+    <h3>⚡ Section Quiz — Memory &amp; Processors</h3>
+    <div class="quiz-questions" id="quiz-s9"></div>
+    <button class="btn-check" onclick="checkQuiz('s9')">Check Answers</button>
+    <div class="quiz-result" id="result-s9"></div>
+  </div>
+</section>
+
+<section id="lab-extension" class="topic-section">
+  <div class="section-header">
+    <span class="tag">Applied Lab</span>
+    <h2>ESP32-WROOM Board Integration Lab</h2>
+    <p class="subtitle">Move from isolated concepts to full board-level reasoning: power domains, signal routing, interface sharing, and return current paths.</p>
+  </div>
+
+  <div class="flow-banner">🔗 This lab connects all core topics: power analysis, digital interfaces, analog sensing, memory/storage, and embedded system integration tradeoffs.</div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>What You Will Practice</h3>
+      <ul>
+        <li>Trace pin paths from ESP32 to each peripheral and back to ground.</li>
+        <li>Analyze how USB power, battery charging, and load sharing affect behavior.</li>
+        <li>Inspect interface dependencies: UART, SPI, ADC, audio, and GPIO.</li>
+        <li>Test what-if scenarios and predict circuit response before checking answers.</li>
+      </ul>
+      <p><a class="btn-check" href="lab_esp32.html">Open ESP32 Systems Lab</a></p>
+    </div>
+  </div>
+</section>
+
+<!-- TOPIC FLOW DIAGRAM -->
+<section id="flow-section" class="topic-section">
+  <div class="section-header">
+    <h2>Topic Dependency Map</h2>
+    <p class="subtitle">Each concept builds on previous ones. Follow this map during revision.</p>
+  </div>
+  <div class="flow-diagram">
+    <div class="flow-node fn-0">Power &amp; Circuits</div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-node fn-1">Binary &amp; Number Systems</div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-node fn-2">Logic Gates</div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-node fn-3">Boolean Algebra &amp; DeMorgan</div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-node fn-4">K-Maps &amp; Minimization</div>
+    <div class="flow-split">
+      <div class="flow-branch">
+        <div class="flow-node fn-5">Flip-Flops</div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-node fn-6">Counters &amp; Registers</div>
+      </div>
+      <div class="flow-branch">
+        <div class="flow-node fn-8">A/D &amp; D/A Conversion</div>
+      </div>
+    </div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-node fn-7">State Machines</div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-node fn-9">Memory &amp; Processors</div>
+  </div>
+</section>
+
+</main>
+
+<script id="quiz-data" type="application/json">
+{
+  "s0": [
+    {
+      "q": "A 5V supply connects through a 1kΩ pull-up resistor to a pin. Switch closes pin to GND. Current through resistor:",
+      "opts": [
+        "0 mA",
+        "5 mA",
+        "50 mA",
+        "0.5 mA"
+      ],
+      "ans": 1,
+      "exp": "I = V/R = 5V / 1000Ω = 5mA (Ohm's Law with switch closed)."
+    },
+    {
+      "q": "Dynamic power consumption scales with V_DD by which relationship?",
+      "opts": [
+        "Linear (V_DD)",
+        "Quadratic (V_DD²)",
+        "Cubic (V_DD³)",
+        "Logarithmic"
+      ],
+      "ans": 1,
+      "exp": "P_dyn = α·C·V_DD²·f — reducing voltage is the most effective power-saving technique."
+    },
+    {
+      "q": "Why are decoupling capacitors placed close to IC power pins?",
+      "opts": [
+        "To increase impedance",
+        "To supply instantaneous current during switching transients",
+        "To filter DC offset",
+        "To prevent latch-up"
+      ],
+      "ans": 1,
+      "exp": "Decoupling caps act as local charge reservoirs, preventing supply rail droops during fast switching events."
+    },
+    {
+      "q": "TTL HIGH voltage range is approximately:",
+      "opts": [
+        "0–1V",
+        "1–2.5V",
+        "2.5–5V",
+        "5–12V"
+      ],
+      "ans": 2,
+      "exp": "TTL: LOW = 0–1V, HIGH = 2.5–5V. This margin provides noise immunity."
+    },
+    {
+      "q": "Ground bounce in digital circuits is caused by:",
+      "opts": [
+        "Too much decoupling",
+        "Simultaneous switching outputs causing transient ground shifts",
+        "Underpowered pull-ups",
+        "Slow clock edges"
+      ],
+      "ans": 1,
+      "exp": "Simultaneous Switching Output (SSO) induces transient current spikes in ground inductance → ground voltage rises momentarily."
+    }
+  ],
+  "s1": [
+    {
+      "q": "Convert 01001111₂ to decimal:",
+      "opts": [
+        "63",
+        "79",
+        "95",
+        "47"
+      ],
+      "ans": 1,
+      "exp": "0+64+0+0+8+4+2+1 = 79. (Positions: 2⁶+2³+2²+2¹+2⁰)"
+    },
+    {
+      "q": "Find the 4-bit 2's complement of 5 (0101):",
+      "opts": [
+        "1010",
+        "1011",
+        "1001",
+        "1100"
+      ],
+      "ans": 1,
+      "exp": "Flip 0101→1010, add 1→1011. Verify: 0101+1011=10000, discard carry→0 ✓"
+    },
+    {
+      "q": "BCD representation of decimal 92 is:",
+      "opts": [
+        "01011100",
+        "10010010",
+        "01011001",
+        "10010110"
+      ],
+      "ans": 1,
+      "exp": "9 = 1001, 2 = 0010 → BCD: 10010010. Each digit encoded separately."
+    },
+    {
+      "q": "Maximum value representable by 8 bits (unsigned):",
+      "opts": [
+        "255",
+        "256",
+        "127",
+        "128"
+      ],
+      "ans": 0,
+      "exp": "2⁸ − 1 = 256 − 1 = 255."
+    },
+    {
+      "q": "Hexadecimal AF₁₆ in decimal:",
+      "opts": [
+        "165",
+        "175",
+        "185",
+        "159"
+      ],
+      "ans": 1,
+      "exp": "A=10, F=15. AF = 10×16 + 15 = 160+15 = 175."
+    }
+  ],
+  "s2": [
+    {
+      "q": "Which gate outputs HIGH only when ALL inputs are HIGH?",
+      "opts": [
+        "OR",
+        "NAND",
+        "AND",
+        "XOR"
+      ],
+      "ans": 2,
+      "exp": "AND gate: Q = AB. HIGH output only when A=1 AND B=1."
+    },
+    {
+      "q": "NAND and NOR gates are called 'universal' because:",
+      "opts": [
+        "They use the fewest transistors",
+        "Any logic function can be built from NAND or NOR alone",
+        "They operate at highest speed",
+        "They have the most inputs"
+      ],
+      "ans": 1,
+      "exp": "AND and OR cannot create inversion alone. NAND/NOR each include inversion, so they can implement any Boolean function."
+    },
+    {
+      "q": "XOR gate output when A=1, B=1:",
+      "opts": [
+        "0",
+        "1",
+        "Undefined",
+        "Depends on previous state"
+      ],
+      "ans": 0,
+      "exp": "XOR = HIGH when inputs differ. Both HIGH → no difference → Q=0."
+    },
+    {
+      "q": "How many NAND gates are needed to build an XOR gate?",
+      "opts": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "ans": 2,
+      "exp": "A⊕B = (A·(AB̄))̄ · (B·(AB̄))̄ — requires exactly 4 NAND gates."
+    },
+    {
+      "q": "Connecting both inputs of a 2-input NOR gate together creates:",
+      "opts": [
+        "AND gate",
+        "BUFFER",
+        "Inverter (NOT)",
+        "XOR gate"
+      ],
+      "ans": 2,
+      "exp": "Q = Ā+Ā = Ā. A NOR gate with tied inputs is an inverter."
+    }
+  ],
+  "s3": [
+    {
+      "q": "DeMorgan's Theorem: A̅+B̅ (NOR) equals:",
+      "opts": [
+        "A+B",
+        "Ā·B̄",
+        "Ā+B̄",
+        "A·B"
+      ],
+      "ans": 1,
+      "exp": "Theorem 1: A+B bar = Ā·B̄. NOR = AND of inverted inputs."
+    },
+    {
+      "q": "Simplify: A + AB",
+      "opts": [
+        "AB",
+        "A+B",
+        "A",
+        "B"
+      ],
+      "ans": 2,
+      "exp": "Absorption law: A + AB = A(1+B) = A·1 = A."
+    },
+    {
+      "q": "DeMorgan's Theorem: A̅·B̅ (NAND) equals:",
+      "opts": [
+        "A·B",
+        "Ā+B̄",
+        "Ā·B̄",
+        "A+B"
+      ],
+      "ans": 1,
+      "exp": "Theorem 2: AB bar = Ā+B̄. NAND = OR of inverted inputs."
+    },
+    {
+      "q": "Boolean identity: A · Ā equals:",
+      "opts": [
+        "A",
+        "1",
+        "0",
+        "Ā"
+      ],
+      "ans": 2,
+      "exp": "Complement law: A AND NOT-A is always 0 (mutually exclusive states)."
+    },
+    {
+      "q": "In firmware, clearing bit 3 of register reg uses which operation?",
+      "opts": [
+        "reg |= (1<<3)",
+        "reg &= ~(1<<3)",
+        "reg ^= (1<<3)",
+        "reg >>= 3"
+      ],
+      "ans": 1,
+      "exp": "AND with NOT(1<<3) clears bit 3, preserving all others. Direct Boolean application."
+    }
+  ],
+  "s4": [
+    {
+      "q": "K-map groups must have dimensions:",
+      "opts": [
+        "Any rectangular shape",
+        "Powers of 2 only (1,2,4,8)",
+        "Must be square",
+        "Maximum 3 cells"
+      ],
+      "ans": 1,
+      "exp": "Groups must be 2ⁿ × 2ᵐ in size. Larger groups yield fewer literals in the expression."
+    },
+    {
+      "q": "In a K-map, the input variable ordering follows gray code because:",
+      "opts": [
+        "It is faster to compute",
+        "Only one bit changes between adjacent cells, enabling valid grouping",
+        "It matches decimal ordering",
+        "It minimizes the table size"
+      ],
+      "ans": 1,
+      "exp": "One-bit changes between adjacent cells ensures that grouped cells genuinely share a common factor that can be extracted."
+    },
+    {
+      "q": "Full adder carry-out Cout expression:",
+      "opts": [
+        "Cout = a⊕b⊕Cin",
+        "Cout = ab + Cin(a+b)",
+        "Cout = a+b+Cin",
+        "Cout = Cin⊕(a·b)"
+      ],
+      "ans": 1,
+      "exp": "From K-map: Cout = ab + Cin·a + Cin·b = ab + Cin(a+b)."
+    },
+    {
+      "q": "A 4-bit MUX with enable requires how many address bits?",
+      "opts": [
+        "1",
+        "2",
+        "4",
+        "3"
+      ],
+      "ans": 1,
+      "exp": "m address bits select 2ᵐ data lines. For 4 data lines: 2² = 4, so 2 address bits."
+    },
+    {
+      "q": "3-bit prime detector result Q = a₀(a₁ + a₂). For input 101 (decimal 5):",
+      "opts": [
+        "Q=0",
+        "Q=1",
+        "Q=undefined",
+        "Q depends on previous state"
+      ],
+      "ans": 1,
+      "exp": "a₂=1, a₁=0, a₀=1. Q = 1·(0+1) = 1·1 = 1. 5 is prime ✓"
+    }
+  ],
+  "s5": [
+    {
+      "q": "SR latch: S=1, R=1 is forbidden because:",
+      "opts": [
+        "It consumes too much power",
+        "Q and Q̄ both become 0, violating complementary requirement",
+        "It resets the clock",
+        "It creates an infinite loop"
+      ],
+      "ans": 1,
+      "exp": "S=R=1 forces both outputs to same value. When inputs released, final state is unpredictable (race condition)."
+    },
+    {
+      "q": "Edge-triggered D flip-flop vs transparent D flip-flop: key advantage is:",
+      "opts": [
+        "Lower power consumption",
+        "Eliminates ambiguity about when D is latched — only at clock edge",
+        "Faster operation",
+        "Fewer transistors"
+      ],
+      "ans": 1,
+      "exp": "Transparent FF latches D any time CLK=HIGH. Edge-triggered latches only at the specific transition moment — precise and deterministic."
+    },
+    {
+      "q": "Setup time (t_setup) in an edge-triggered flip-flop means:",
+      "opts": [
+        "Time for Q to appear after clock edge",
+        "Time D must be stable BEFORE the clock edge",
+        "Time to power up the flip-flop",
+        "Clock period minimum"
+      ],
+      "ans": 1,
+      "exp": "D must be valid for t_setup before the clock edge to guarantee correct latching. Violation causes metastability."
+    },
+    {
+      "q": "JK flip-flop with J=1, K=1 on clock edge:",
+      "opts": [
+        "Sets Q=1",
+        "Resets Q=0",
+        "Holds current state",
+        "Toggles Q"
+      ],
+      "ans": 3,
+      "exp": "J=K=1 is the toggle state: Q becomes Q̄. Used for divide-by-2 without external wiring."
+    },
+    {
+      "q": "A debounced switch uses SR latch because:",
+      "opts": [
+        "It is faster than RC debounce",
+        "Bounce causes A=B=1 which is the 'retain previous' state — output Q unchanged",
+        "It uses fewer components",
+        "It works without power"
+      ],
+      "ans": 1,
+      "exp": "Switch bounce causes both inputs momentarily HIGH → latch holds previous state → Q doesn't glitch."
+    }
+  ],
+  "s6": [
+    {
+      "q": "Divide-by-2 counter using D flip-flop: Q̄ is connected to:",
+      "opts": [
+        "CLK input",
+        "D input",
+        "Reset input",
+        "Another FF's Q"
+      ],
+      "ans": 1,
+      "exp": "Q̄ fed back to D: each clock edge makes D = Q̄, so Q toggles. Output frequency = f_CLK / 2."
+    },
+    {
+      "q": "Main drawback of asynchronous (ripple) counter at high frequency:",
+      "opts": [
+        "High power consumption",
+        "Propagation delay accumulates — LSB and MSB process different pulses",
+        "Cannot count backwards",
+        "Requires more flip-flops"
+      ],
+      "ans": 1,
+      "exp": "Each FF adds propagation delay. At high speed, the entire counter is never in a valid simultaneous state — glitches appear on decoded outputs."
+    },
+    {
+      "q": "4-bit shift register: after 3 clock cycles with serial input 1,0,1 (MSB first), Q0 contains:",
+      "opts": [
+        "1",
+        "0",
+        "Depends on initial state",
+        "1 only if all FFs reset"
+      ],
+      "ans": 0,
+      "exp": "Serial data shifts through: cycle 1 Q0=1, cycle 2 Q0=0 (1 shifts to Q1), cycle 3 Q0=1. Q0 = most recent input = 1."
+    },
+    {
+      "q": "All flip-flops in a synchronous register share:",
+      "opts": [
+        "The same data input",
+        "A single clock line",
+        "Cross-connected outputs",
+        "An asynchronous reset only"
+      ],
+      "ans": 1,
+      "exp": "Synchronous = all FFs clocked simultaneously. Data captured in parallel on single CLK edge."
+    },
+    {
+      "q": "SPI communication uses which register concept fundamentally?",
+      "opts": [
+        "D-type latch",
+        "Shift register",
+        "Ripple counter",
+        "State register"
+      ],
+      "ans": 1,
+      "exp": "SPI shifts data one bit per clock cycle — directly implemented as a shift register in both master and slave."
+    }
+  ],
+  "s7": [
+    {
+      "q": "Minimum flip-flops needed for a state machine with 5 distinct states:",
+      "opts": [
+        "2",
+        "3",
+        "5",
+        "4"
+      ],
+      "ans": 1,
+      "exp": "n = ⌈log₂(5)⌉ = ⌈2.32⌉ = 3 flip-flops (can represent 8 states, 3 unused)."
+    },
+    {
+      "q": "Why must unused states in a state machine have an exit path?",
+      "opts": [
+        "To improve speed",
+        "Power-on may land in unused state — machine locks with no way out",
+        "To simplify K-map",
+        "To reduce flip-flop count"
+      ],
+      "ans": 1,
+      "exp": "On power-up, state register may initialize to any state. Unused states without exits trap the machine (equivalent to firmware infinite loop)."
+    },
+    {
+      "q": "In a ROM-based state machine, the ROM address is formed from:",
+      "opts": [
+        "Clock signal only",
+        "Present state bits combined with external input bits",
+        "Next state bits only",
+        "Output bits"
+      ],
+      "ans": 1,
+      "exp": "Address = [present state | inputs]. ROM data = [next state | outputs]. This encodes the entire state transition table."
+    },
+    {
+      "q": "Up/down 2-bit counter logic for D₀ is:",
+      "opts": [
+        "D₀ = Q₀",
+        "D₀ = Q̄₀",
+        "D₀ = u⊕Q₀",
+        "D₀ = Q₁"
+      ],
+      "ans": 1,
+      "exp": "From the truth table/K-map: D₀ = Q̄₀ (LSB always toggles on every count)."
+    },
+    {
+      "q": "A microprocessor differs from a fixed state machine because:",
+      "opts": [
+        "It runs faster",
+        "External memory stores the program — input sequence can be changed without rewiring",
+        "It uses more flip-flops",
+        "It requires no clock"
+      ],
+      "ans": 1,
+      "exp": "Fixed state machine: behavior wired in gates/ROM. Microprocessor: behavior stored in reprogrammable memory (RAM/Flash). Same hardware, different software."
+    }
+  ],
+  "s8": [
+    {
+      "q": "Nyquist theorem: analog audio signal max frequency 20kHz requires minimum sampling frequency:",
+      "opts": [
+        "20kHz",
+        "40kHz",
+        "80kHz",
+        "10kHz"
+      ],
+      "ans": 1,
+      "exp": "f_samp > 2 × f_max = 2 × 20kHz = 40kHz. Standard audio uses 44.1kHz."
+    },
+    {
+      "q": "12-bit ADC resolution expressed as percentage of full scale:",
+      "opts": [
+        "0.1%",
+        "0.024%",
+        "0.012%",
+        "0.05%"
+      ],
+      "ans": 2,
+      "exp": "Resolution = 1/(2 × 2¹²) = 1/8192 ≈ 0.012%."
+    },
+    {
+      "q": "Flash ADC is preferred over SAR when:",
+      "opts": [
+        "High accuracy is needed",
+        "Maximum conversion speed is required (e.g. RF, oscilloscopes)",
+        "Power consumption must be minimized",
+        "High bit depth (16-bit+) is required"
+      ],
+      "ans": 1,
+      "exp": "Flash: all comparisons parallel → single clock conversion. SAR: sequential binary search → n clocks for n bits. Flash is fastest but hardware doubles per added bit."
+    },
+    {
+      "q": "SAR ADC binary search algorithm guarantees convergence in:",
+      "opts": [
+        "2ⁿ clock cycles",
+        "n clock cycles",
+        "n² clock cycles",
+        "Variable cycles"
+      ],
+      "ans": 1,
+      "exp": "Binary search processes one bit per clock cycle, MSB to LSB. n-bit ADC always completes in exactly n cycles."
+    },
+    {
+      "q": "Dual slope ADC advantage over single slope ADC includes:",
+      "opts": [
+        "Faster conversion",
+        "Result independent of capacitor value; averages out periodic noise",
+        "Lower component count",
+        "Higher bandwidth"
+      ],
+      "ans": 1,
+      "exp": "Dual slope: Vcap = αVin·τ/C, then Δt = (ατ/I₀)·Vin = β·Vin. C cancels out. Integration step averages 60Hz noise to zero."
+    }
+  ],
+  "s9": [
+    {
+      "q": "DRAM requires periodic refresh because:",
+      "opts": [
+        "Clock must be maintained",
+        "Stored charge leaks off capacitors (~1ms timescale) — data lost without refresh",
+        "Static current drains supply",
+        "It is write-only memory"
+      ],
+      "ans": 1,
+      "exp": "DRAM stores bits as charge on capacitors. Leakage through resistance discharges them. DRAM controller must refresh every row within ~64ms."
+    },
+    {
+      "q": "8×1 RAM has how many external connections (excluding power/ground)?",
+      "opts": [
+        "9",
+        "7",
+        "8",
+        "11"
+      ],
+      "ans": 1,
+      "exp": "3 address bits + 1 data in + 1 WE + 1 OE + 1 data out = 7. Generalized: 4 + log₂(n)."
+    },
+    {
+      "q": "An 8K×16 RAM total storage capacity is:",
+      "opts": [
+        "8KB",
+        "64KB",
+        "128KB",
+        "16KB"
+      ],
+      "ans": 2,
+      "exp": "8K locations × 16 bits = 8192 × 16 = 131,072 bits = 16,384 bytes = 128KB."
+    },
+    {
+      "q": "Boot code (startup firmware) is stored in ROM rather than RAM because:",
+      "opts": [
+        "ROM is faster",
+        "RAM loses content on power loss — ROM retains data without power",
+        "ROM uses less power",
+        "RAM is too expensive"
+      ],
+      "ans": 1,
+      "exp": "RAM is volatile. Power cycle erases RAM. ROM/Flash retains program indefinitely — essential for MCU reset vector and bootloader."
+    },
+    {
+      "q": "Which memory type offers fastest access time?",
+      "opts": [
+        "eMMC Flash",
+        "DRAM",
+        "CPU registers",
+        "EEPROM"
+      ],
+      "ans": 2,
+      "exp": "Registers: ~1 cycle (sub-nanosecond). Cache SRAM: 1–10 cycles. DRAM: 100+ cycles. Flash/eMMC: microseconds–milliseconds."
+    }
+  ]
+}
+</script>
+<script src="app.js"></script>
+</body>
+</html>

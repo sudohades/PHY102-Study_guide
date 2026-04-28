@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ESP32-WROOM Systems Lab</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="lab_esp32.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<nav id="sidebar">
+  <div id="nav-header">
+    <span class="nav-label">ECE LAB</span>
+    <h1>ESP32-WROOM Systems Lab</h1>
+    <p>Circuit Integration Exercise</p>
+  </div>
+  <ul id="nav-links">
+    <li><a href="index.html" class="nav-item"><span class="num">←</span> Back To Main Guide</a></li>
+    <li><a href="#l0" class="nav-item active" data-section="l0"><span class="num">00</span> Lab Objective</a></li>
+    <li><a href="#l1" class="nav-item" data-section="l1"><span class="num">01</span> Pinout Paths</a></li>
+    <li><a href="#l2" class="nav-item" data-section="l2"><span class="num">02</span> Power &amp; Energy</a></li>
+    <li><a href="#l3" class="nav-item" data-section="l3"><span class="num">03</span> Wiring Schematic</a></li>
+    <li><a href="#l4" class="nav-item" data-section="l4"><span class="num">04</span> Scenario Tester</a></li>
+    <li><a href="#l5" class="nav-item" data-section="l5"><span class="num">05</span> Lab Quiz</a></li>
+  </ul>
+  <div id="progress-block">
+    <div id="progress-label">Lab Quiz Progress: <span id="pct">0%</span></div>
+    <div id="progress-bar"><div id="progress-fill"></div></div>
+  </div>
+</nav>
+
+<div id="hamburger" onclick="toggleSidebar()">&#9776;</div>
+
+<main id="content">
+
+<section id="l0" class="topic-section">
+  <div class="section-header">
+    <span class="tag">Applied Reasoning</span>
+    <h2>Lab: ESP32-WROOM Board Behavior</h2>
+    <p class="subtitle">This lab trains rigorous board-level thinking: every signal has a source, a destination, and a return path. Every power rail has limits. Every interface has electrical assumptions.</p>
+  </div>
+
+  <div class="flow-banner">🔗 Goal: move from "which pin" to "why this path behaves this way under load, noise, and source changes".</div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>Board Components In This Exercise</h3>
+      <ul>
+        <li>ESP32-WROOM module</li>
+        <li>5 push buttons</li>
+        <li>1 potentiometer (volume-like analog input)</li>
+        <li>SD card interface</li>
+        <li>USB 3.0 input (power + host mass-storage path concept)</li>
+        <li>USB-C battery charging path</li>
+        <li>Speaker + amplifier path</li>
+        <li>UART reader path</li>
+        <li>SPI expansion interface</li>
+        <li>Programming header for an attached external module</li>
+        <li>Microphone input path</li>
+        <li>10 LEDs</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>What To Verify For Every Signal</h3>
+      <ul>
+        <li>Which pin drives the net and at what logic level.</li>
+        <li>Which component pin receives it and what threshold it expects.</li>
+        <li>How current returns to ground for that event.</li>
+        <li>How the same rail behaves when additional loads turn on.</li>
+        <li>What failure mode appears first: brownout, clipping, timing error, or noise.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="l1" class="topic-section">
+  <div class="section-header">
+    <span class="tag">System Mapping</span>
+    <h2>ESP32-WROOM Pinout Paths To Components</h2>
+    <p class="subtitle">Pin selection is not isolated naming. It defines allowable voltage range, timing behavior, and electromagnetic return geometry across the board.</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>GPIO + Analog + Serial + Audio Mapping</h3>
+      <table class="mini-table">
+        <tr><th>Function</th><th>ESP32 Pin(s)</th><th>Path To Component</th><th>Return Path</th></tr>
+        <tr><td>BTN1..BTN5</td><td>GPIO32, 33, 25, 26, 27</td><td>Pin -> button -> GND (with pull-up)</td><td>Button closes to ground plane</td></tr>
+        <tr><td>Potentiometer</td><td>GPIO34 (ADC1_CH6)</td><td>3V3 -> pot wiper -> GPIO34</td><td>Pot lower end to GND</td></tr>
+        <tr><td>UART Reader</td><td>TX0 GPIO1, RX0 GPIO3</td><td>ESP32 UART -> USB-UART bridge / header</td><td>Shared digital GND reference</td></tr>
+        <tr><td>Microphone (I2S)</td><td>BCLK GPIO14, WS GPIO15, SD GPIO35</td><td>I2S clocks/data -> MEMS mic</td><td>Mic ground to analog-digital join</td></tr>
+        <tr><td>Speaker Output</td><td>GPIO25 PWM/DAC</td><td>GPIO25 -> Class-D amp IN -> speaker</td><td>Speaker return to amp GND -> board GND</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3>Storage + Expansion + Programming</h3>
+      <table class="mini-table">
+        <tr><th>Function</th><th>ESP32 Pin(s)</th><th>Path To Component</th><th>Return Path</th></tr>
+        <tr><td>SD Card (SPI)</td><td>SCK18, MISO19, MOSI23, CS5</td><td>SPI nets -> SD socket pins</td><td>Socket ground to digital plane</td></tr>
+        <tr><td>SPI Expansion</td><td>SCK18, MISO19, MOSI23, CS16</td><td>ESP32 -> 2x5 header</td><td>Header GND adjacent to signal pins</td></tr>
+        <tr><td>LED Bank (10)</td><td>74HC595 via SPI + GPIO26/27</td><td>ESP32 -> shift register -> LED resistors</td><td>LED cathode currents to GND</td></tr>
+        <tr><td>Program Header (External Module)</td><td>3V3, GND, TX, RX, EN, IO0</td><td>Board header -> attached target module</td><td>Shared ground mandatory for UART reliability</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="formula-block">
+    <div class="formula-row"><span>LED Current</span><code>I_led = (Vrail - Vf) / R</code></div>
+    <div class="formula-row"><span>Pot ADC Voltage</span><code>V_adc = 3.3 x (Pot% / 100)</code></div>
+    <div class="formula-row"><span>Rail Power</span><code>P_3v3 = V_3v3 x I_total</code></div>
+    <div class="formula-row"><span>Button Logic</span><code>Open -> HIGH, Pressed -> LOW</code></div>
+  </div>
+</section>
+
+<section id="l2" class="topic-section">
+  <div class="section-header">
+    <span class="tag">Power Architecture</span>
+    <h2>Power, Signals, And Energy Relationship</h2>
+    <p class="subtitle">This board has two source domains: USB 3.0 VBUS and battery path through USB-C charging. Source transitions affect analog quality, digital margins, and audio performance.</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>USB 3.0 Input Path</h3>
+      <ul>
+        <li>USB 3.0 VBUS (5V) feeds board power-stage input.</li>
+        <li>Buck/LDO creates 3.3V system rail for ESP32 and peripherals.</li>
+        <li>D+/D- path used for compatibility channel to bridge logic.</li>
+        <li>SuperSpeed pairs route to host-side storage bridge for flash-disk role in this lab concept.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>USB-C Charging Path</h3>
+      <ul>
+        <li>CC pins negotiate source behavior with charging IC.</li>
+        <li>Charging IC controls battery current and system path.</li>
+        <li>Battery rail supports system when USB 3.0 is removed.</li>
+        <li>Ground continuity between charger, battery, and ESP32 is required for stable reference.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Signal Integrity Notes</h3>
+      <ul>
+        <li>SPI edges for SD and LED shift register can inject noise into analog rails.</li>
+        <li>Microphone and potentiometer channels require clean reference return and local decoupling.</li>
+        <li>Speaker bursts increase dynamic current demand and can pull rail voltage down.</li>
+        <li>If return paths are long, ground bounce appears as false button edges or UART framing errors.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="l3" class="topic-section">
+  <div class="section-header">
+    <span class="tag">Interactive Schematic</span>
+    <h2>Trace A Path From Pin To Component To Ground</h2>
+    <p class="subtitle">Click a component to highlight its wiring path. The explanation panel shows signal direction, supply path, and return current path.</p>
+  </div>
+
+  <div class="lab-panel">
+    <div class="lab-controls">
+      <h3>Component Paths</h3>
+      <div id="component-buttons" class="component-buttons"></div>
+      <div id="path-explain" class="callout"></div>
+    </div>
+
+    <div class="lab-schematic-wrap">
+      <p class="ascii-caption">ASCII pinout view (JSON-driven): choose a component to load its pin-level path map.</p>
+      <pre id="ascii-schematic" class="ascii-schematic" aria-label="ASCII pinout schematic"></pre>
+      <div id="ascii-notes" class="ascii-notes"></div>
+    </div>
+  </div>
+</section>
+
+<section id="l4" class="topic-section">
+  <div class="section-header">
+    <span class="tag">Scenario Lab</span>
+    <h2>Test Circuit Scenarios</h2>
+    <p class="subtitle">Adjust operating conditions and observe predicted voltage/current behavior and interface risk. This is a conceptual systems model for learning, not SPICE-level simulation.</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>Inputs</h3>
+      <div class="control-grid">
+        <label>Power source
+          <select id="src-select">
+            <option value="usb3">USB 3.0 only</option>
+            <option value="battery">Battery only</option>
+            <option value="both">USB 3.0 + Battery</option>
+          </select>
+        </label>
+        <label>Potentiometer (%)
+          <input id="pot-level" type="range" min="0" max="100" value="40" />
+        </label>
+        <label>LEDs ON (0-10)
+          <input id="led-count" type="range" min="0" max="10" value="4" />
+        </label>
+        <label><input id="sd-present" type="checkbox" checked /> SD card active</label>
+        <label><input id="speaker-on" type="checkbox" checked /> Speaker active</label>
+        <label><input id="mic-on" type="checkbox" checked /> Microphone active</label>
+      </div>
+
+      <div class="button-bank">
+        <span>Button states (pressed = LOW):</span>
+        <label><input class="btn-state" type="checkbox" value="1" /> BTN1</label>
+        <label><input class="btn-state" type="checkbox" value="2" /> BTN2</label>
+        <label><input class="btn-state" type="checkbox" value="3" /> BTN3</label>
+        <label><input class="btn-state" type="checkbox" value="4" /> BTN4</label>
+        <label><input class="btn-state" type="checkbox" value="5" /> BTN5</label>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Predicted Circuit Behavior</h3>
+      <div id="scenario-output" class="formula-inline"></div>
+      <div id="scenario-notes" class="callout"></div>
+    </div>
+  </div>
+</section>
+
+<section id="l5" class="topic-section">
+  <div class="section-header">
+    <span class="tag">Assessment</span>
+    <h2>Lab Quiz: Pin Paths, Rails, And Interfaces</h2>
+    <p class="subtitle">Answer after testing scenarios above. Each explanation links behavior to current return and interface constraints.</p>
+  </div>
+
+  <div class="quiz-block" id="q-lab">
+    <h3>⚡ ESP32 Systems Lab Quiz</h3>
+    <div class="quiz-questions" id="quiz-lab"></div>
+    <button class="btn-check" id="check-lab">Check Answers</button>
+    <div class="quiz-result" id="result-lab"></div>
+  </div>
+</section>
+
+</main>
+
+<script id="lab-pinout-data" type="application/json">
+{
+  "esp32Label": "ESP32-WROOM",
+  "components": {
+    "usb3": {
+      "label": "USB 3.0 Input",
+      "desc": "USB3 VBUS enters the board power mux and supports storage bridge paths while sharing board ground reference.",
+      "pins": [
+        {"esp": "VIN_5V", "module": "USB3_VBUS", "trace": "|--fuse(500mA)--u(PWR_MUX).IN"},
+        {"esp": "GND", "module": "USB3_GND", "trace": "|--fb(600ohm@100MHz)--GND_PLANE"}
+      ],
+      "notes": [
+        "VBUS path must sustain peak startup current.",
+        "Ground return should be low impedance for data signal integrity."
+      ]
+    },
+    "usbc": {
+      "label": "USB-C Charger",
+      "desc": "USB-C controls battery charge and system path through charger IC with CC negotiation.",
+      "pins": [
+        {"esp": "SYS_5V", "module": "CHG_SYS", "trace": "|--u(CHG_IC).SYS--u(PWR_MUX).IN2"},
+        {"esp": "BAT_SNS", "module": "CHG_BAT", "trace": "|--r(100m)--u(CHG_IC).BAT"}
+      ],
+      "notes": [
+        "SYS rail should remain stable during source transition.",
+        "Charger ground and ESP32 ground must stay common."
+      ]
+    },
+    "battery": {
+      "label": "Battery",
+      "desc": "Battery backup rail feeds the board through the power path IC.",
+      "pins": [
+        {"esp": "SYS_3V3", "module": "BAT+", "trace": "|--u(PWR_MUX)--u(LDO_3V3)--ESP32.3V3"},
+        {"esp": "GND", "module": "BAT-", "trace": "|--shunt(0.05R)--GND_PLANE"}
+      ],
+      "notes": [
+        "Higher load means larger transient droop in battery mode.",
+        "Return path resistance directly affects noise floor."
+      ]
+    },
+    "buttons": {
+      "label": "5 Buttons",
+      "desc": "Each button uses pull-up logic and reads LOW when pressed to ground.",
+      "pins": [
+        {"esp": "GPIO32", "module": "BTN1_IN", "trace": "|--r(10k pullup to 3V3)--sw(S1)--GND"},
+        {"esp": "GPIO33", "module": "BTN2_IN", "trace": "|--r(10k pullup to 3V3)--sw(S2)--GND"},
+        {"esp": "GPIO25", "module": "BTN3_IN", "trace": "|--r(10k pullup to 3V3)--sw(S3)--GND"},
+        {"esp": "GPIO26", "module": "BTN4_IN", "trace": "|--r(10k pullup to 3V3)--sw(S4)--GND"},
+        {"esp": "GPIO27", "module": "BTN5_IN", "trace": "|--r(10k pullup to 3V3)--sw(S5)--GND"}
+      ],
+      "notes": [
+        "Pressed state current returns through switch to ground plane.",
+        "Debounce in firmware avoids false transitions."
+      ]
+    },
+    "pot": {
+      "label": "Potentiometer",
+      "desc": "Potentiometer wiper feeds ADC as a ratio of 3V3 to GND.",
+      "pins": [
+        {"esp": "GPIO34", "module": "POT_WIPER", "trace": "|--r(1k)--RV1.wiper"},
+        {"esp": "ADC_GND", "module": "POT_LOW", "trace": "|--c(100nF to GND at ADC pin)--GND"}
+      ],
+      "notes": [
+        "ADC readings shift if 3V3 or GND reference moves.",
+        "Small RC near ADC input suppresses high-frequency noise."
+      ]
+    },
+    "sd": {
+      "label": "SD Card SPI",
+      "desc": "SD card uses shared SPI bus and dedicated chip select.",
+      "pins": [
+        {"esp": "GPIO18", "module": "SD_SCK", "trace": "|--r(33)--u(SD).CLK"},
+        {"esp": "GPIO19", "module": "SD_MISO", "trace": "|--r(33)--u(SD).DO"},
+        {"esp": "GPIO23", "module": "SD_MOSI", "trace": "|--r(33)--u(SD).DI"},
+        {"esp": "GPIO5", "module": "SD_CS", "trace": "|--r(10k pullup)--u(SD).CS"}
+      ],
+      "notes": [
+        "Write bursts can cause current spikes on 3V3 rail.",
+        "Place decoupling close to SD socket VDD pin."
+      ]
+    },
+    "uart": {
+      "label": "UART Reader",
+      "desc": "UART lines require common ground reference for clean threshold detection.",
+      "pins": [
+        {"esp": "GPIO1", "module": "UART_RXD_EXT", "trace": "|--r(22)--header(J3).RX"},
+        {"esp": "GPIO3", "module": "UART_TXD_EXT", "trace": "|--r(22)--header(J3).TX"}
+      ],
+      "notes": [
+        "Missing common ground causes framing and data errors.",
+        "Series resistors help edge control and ESD robustness."
+      ]
+    },
+    "spi": {
+      "label": "SPI Expansion Header",
+      "desc": "Expansion header exposes SPI and ground for external modules.",
+      "pins": [
+        {"esp": "GPIO18", "module": "J5_SCK", "trace": "|--r(33)--header(J5).SCK"},
+        {"esp": "GPIO19", "module": "J5_MISO", "trace": "|--r(33)--header(J5).MISO"},
+        {"esp": "GPIO23", "module": "J5_MOSI", "trace": "|--r(33)--header(J5).MOSI"},
+        {"esp": "GPIO16", "module": "J5_CS", "trace": "|--r(10k pullup)--header(J5).CS"}
+      ],
+      "notes": [
+        "Keep GND pin adjacent to SCK to tighten return loop.",
+        "Length matching helps maintain SPI timing margins."
+      ]
+    },
+    "speaker": {
+      "label": "Speaker + Amplifier",
+      "desc": "PWM/DAC path drives audio amplifier input then speaker load.",
+      "pins": [
+        {"esp": "GPIO25", "module": "AMP_IN", "trace": "|--r(100)--u(AMP).IN"},
+        {"esp": "3V3_AUD", "module": "AMP_VDD", "trace": "|--c(100nF)--c(10uF)--u(AMP).VDD"}
+      ],
+      "notes": [
+        "Audio bursts are dynamic loads that can induce rail ripple.",
+        "Keep amplifier return separated from sensitive ADC return segment."
+      ]
+    },
+    "mic": {
+      "label": "Microphone I2S",
+      "desc": "I2S clock/data links feed digital microphone capture path.",
+      "pins": [
+        {"esp": "GPIO14", "module": "MIC_BCLK", "trace": "|--r(22)--u(MIC).BCLK"},
+        {"esp": "GPIO15", "module": "MIC_WS", "trace": "|--r(22)--u(MIC).WS"},
+        {"esp": "GPIO35", "module": "MIC_DATA", "trace": "|--r(22)--u(MIC).DOUT"}
+      ],
+      "notes": [
+        "Clock edges are digital but carried signal represents low-level audio content.",
+        "Local decoupling at mic supply pin improves SNR."
+      ]
+    },
+    "leds": {
+      "label": "10 LEDs",
+      "desc": "Shift-register outputs drive LED bank through current-limiting resistors.",
+      "pins": [
+        {"esp": "GPIO23", "module": "74HC595_SER", "trace": "|--r(33)--u(74HC595).SER"},
+        {"esp": "GPIO18", "module": "74HC595_SRCLK", "trace": "|--r(33)--u(74HC595).SRCLK"},
+        {"esp": "GPIO26", "module": "74HC595_RCLK", "trace": "|--r(33)--u(74HC595).RCLK"},
+        {"esp": "3V3", "module": "LED_ANODE_BUS", "trace": "|--r(220 each)--D1..D10.anode"}
+      ],
+      "notes": [
+        "Turning on more LEDs linearly increases current draw.",
+        "Thermal and rail budget should include worst-case LED duty cycle."
+      ]
+    },
+    "prog": {
+      "label": "Programming Header",
+      "desc": "Programming header exposes rails and boot-control pins for attached module flashing.",
+      "pins": [
+        {"esp": "GPIO1", "module": "J6_TX", "trace": "|--r(22)--header(J6).TX"},
+        {"esp": "GPIO3", "module": "J6_RX", "trace": "|--r(22)--header(J6).RX"},
+        {"esp": "EN", "module": "J6_EN", "trace": "|--r(10k pullup)--header(J6).EN"},
+        {"esp": "IO0", "module": "J6_BOOT", "trace": "|--r(10k pullup)--header(J6).IO0--sw(PROG)--GND"}
+      ],
+      "notes": [
+        "Bootloader entry depends on EN and IO0 sequence.",
+        "External target must share 3V3 logic and ground reference."
+      ]
+    }
+  }
+}
+</script>
+
+<script id="lab-quiz-data" type="application/json">
+[
+  {
+    "q": "If a pull-up button is pressed, the ESP32 GPIO reads:",
+    "opts": [
+      "HIGH",
+      "LOW",
+      "Floating",
+      "Undefined only during boot"
+    ],
+    "ans": 1,
+    "exp": "With pull-up topology, pressing closes path to GND so pin voltage is forced LOW."
+  },
+  {
+    "q": "Most direct equation for 3.3V rail power in this lab is:",
+    "opts": [
+      "P = I/R",
+      "P = V x I",
+      "P = V/R",
+      "P = R/I"
+    ],
+    "ans": 1,
+    "exp": "Power is voltage times current: P = V x I."
+  },
+  {
+    "q": "Why does shared ground matter for UART between board and external reader?",
+    "opts": [
+      "It only affects speed",
+      "It does not matter for digital links",
+      "It defines common logic reference thresholds",
+      "It increases TX voltage"
+    ],
+    "ans": 2,
+    "exp": "UART logic levels are interpreted against receiver ground reference; mismatched grounds shift thresholds."
+  },
+  {
+    "q": "When SD write bursts and speaker output happen together, first system risk is usually:",
+    "opts": [
+      "Higher ADC resolution",
+      "Rail droop and noise coupling",
+      "Lower current draw",
+      "Automatic clock recovery"
+    ],
+    "ans": 1,
+    "exp": "Both loads increase dynamic current, which can cause 3V3 droop/noise if power-path and decoupling are weak."
+  },
+  {
+    "q": "A potentiometer used as ADC input forms:",
+    "opts": [
+      "Current mirror",
+      "Voltage divider",
+      "Wheatstone bridge",
+      "RC oscillator"
+    ],
+    "ans": 1,
+    "exp": "The top and bottom ends create a divider, with wiper output proportional to position."
+  },
+  {
+    "q": "Best reason to place SPI ground near SPI signals on expansion header:",
+    "opts": [
+      "Lower software latency",
+      "Cleaner return path and better edge integrity",
+      "More GPIO pins",
+      "Higher ADC gain"
+    ],
+    "ans": 1,
+    "exp": "Fast edges need compact return loops to reduce inductive noise and ringing."
+  },
+  {
+    "q": "Programming header needs EN and IO0 because:",
+    "opts": [
+      "They select bootloader mode for flashing",
+      "They power SD card",
+      "They set PWM frequency",
+      "They control battery charging"
+    ],
+    "ans": 0,
+    "exp": "ESP32 flashing commonly uses EN reset timing plus IO0 boot strap control."
+  },
+  {
+    "q": "If 8 LEDs are ON and each draws about 6mA, LED current contribution is approximately:",
+    "opts": [
+      "8mA",
+      "24mA",
+      "48mA",
+      "80mA"
+    ],
+    "ans": 2,
+    "exp": "8 x 6mA = 48mA."
+  }
+]
+</script>
+<script src="lab_esp32.js"></script>
+</body>
+</html>
