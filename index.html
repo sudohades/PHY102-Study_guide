@@ -41,6 +41,35 @@
 <!-- MAIN CONTENT -->
 <main id="content">
 
+<!-- WELCOME & GUIDE INTRO -->
+<section id="intro" class="topic-section">
+  <div class="section-header">
+    <h2>Digital Electronics Study Guide</h2>
+    <p class="subtitle">A comprehensive 20-minute read summarizing the semester's core concepts, from power and binary through processors and memory.</p>
+  </div>
+
+  <div class="callout">
+    <strong>How to use this guide:</strong>
+    <ul>
+      <li><strong>Linear read:</strong> Section 0 (power) through Section 9 (memory) builds a complete narrative. Each section depends on prior ones. If a concept is unclear, re-read the linked earlier section.</li>
+      <li><strong>Exam prep:</strong> Use quizzes at the end of each section to check understanding. Review low-scoring sections with the PDF notes.</li>
+      <li><strong>Non-linear exploration:</strong> The sidebar lets you jump to any section. Follow the dependency flow-banners to understand prerequisites.</li>
+      <li><strong>Deeper dives:</strong> The PDF notes (18EC32_Notes_Unts_I-III-IV-V.pdf) provide full derivations and proofs; this guide summarizes and explains the "why."</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>The Big Picture</h3>
+    <p>Digital systems convert physical signals (temperature, light, sound) into binary values, process them with logic gates and state machines, store results in memory, and convert back to analog outputs. This guide walks through each layer:</p>
+    <ul>
+      <li><strong>Layers 1–2:</strong> Power and bits — the physical foundation.</li>
+      <li><strong>Layers 3–5:</strong> Gates, Boolean algebra, and minimization — how to design efficient combinational logic.</li>
+      <li><strong>Layers 6–7:</strong> Flip-flops, counters, and state machines — how to add memory and time-dependent behavior.</li>
+      <li><strong>Layers 8–9:</strong> ADC/DAC and memory hierarchy — how to connect the digital world to analog reality and how processors work at the architectural level.</li>
+    </ul>
+  </div>
+</section>
+
 <!-- ═══════════════════════════════════════════ -->
 <!-- SECTION 0: POWER & CIRCUITS -->
 <!-- ═══════════════════════════════════════════ -->
@@ -48,10 +77,14 @@
   <div class="section-header">
     <span class="tag">Embedded Systems Foundation</span>
     <h2>Power &amp; Electricity in Digital Circuits</h2>
-    <p class="subtitle">Before digital logic, understand the physical layer — voltage, current, and power govern every embedded decision.</p>
+    <p class="subtitle">Before digital logic, understand the physical layer — voltage, current, and power govern every embedded decision, and the rest of the semester builds on that foundation.</p>
   </div>
 
   <div class="flow-banner">🔗 This section underpins every section that follows — TTL voltage levels, pull-up resistors, and power dissipation appear throughout the course.</div>
+
+  <div class="callout">
+    <strong>Semester Roadmap:</strong> The course starts with analog versus digital behavior, moves into binary number systems and logic gates, then uses Boolean algebra and Karnaugh maps to simplify circuits. From there it builds memory elements, counters, and state machines, and finishes with ADC/DAC conversion plus memory and processor architecture. Each section depends on the prior ones — if something feels unclear, revisit earlier sections first.
+  </div>
 
   <div class="card-grid">
     <div class="card">
@@ -155,18 +188,20 @@
         <tr><td>True</td><td>1</td><td>HIGH (H)</td><td>LOW (L)</td></tr>
         <tr><td>False</td><td>0</td><td>LOW (L)</td><td>HIGH (H)</td></tr>
       </table>
-      <p><strong>Positive-true convention:</strong> HIGH = True = 1.<br>
-      <strong>Negative-true convention:</strong> bar over label (e.g. <code>S̄</code>), LOW = True.</p>
+      <p><strong>Positive-true convention:</strong> HIGH = True = 1. This is standard in most embedded systems. When a pin is at +5V or +3.3V (depending on the voltage standard), it reads as a logic 1.<br>
+      <strong>Negative-true convention:</strong> bar over label (e.g. <code>S̄</code>), LOW = True. Used in some legacy circuits and when signal polarity is inverted (e.g., active-low enable pins). When the pin is at 0V, the signal is "true" or "active." This matters in practice: an active-low reset pin means the circuit resets when you pull it to 0V, not when you pull it to 1V.</p>
+      <p><em>Reading concern:</em> Always check schematics for bar notation. Confusing positive and negative logic is a common source of embedded firmware bugs — your code may be trying to set a pin HIGH when it should go LOW to activate a feature.</p>
     </div>
     <div class="card">
       <h3>Unsigned Binary</h3>
       <ul>
-        <li>Positional notation: each bit = 2<sup>n</sup>.</li>
-        <li>Example: 01001111₂ = 64+8+4+2+1 = 79₁₀</li>
-        <li>Max value for n bits: <strong>2ⁿ − 1</strong></li>
-        <li>To convert decimal→binary: divide by 2, collect remainders in reverse.</li>
-        <li>MSB = highest power; LSB = lowest power.</li>
+        <li><strong>Positional notation:</strong> each bit represents a power of 2. The rightmost bit is 2⁰, the next is 2¹, then 2², and so on.</li>
+        <li><strong>Example:</strong> 01001111₂ = 0·128 + 1·64 + 0·32 + 0·16 + 1·8 + 1·4 + 1·2 + 1·1 = 64+8+4+2+1 = 79₁₀</li>
+        <li><strong>Max value for n bits:</strong> 2ⁿ − 1. For 8 bits: 255. For 16 bits: 65,535. This is why ADC resolution matters — a 12-bit ADC can represent 4,096 distinct values.</li>
+        <li><strong>Conversion:</strong> decimal→binary by repeatedly dividing by 2 and collecting remainders in reverse order. For example, 79÷2=39r1, 39÷2=19r1, 19÷2=9r1, etc. Reading remainders backward gives 01001111.</li>
+        <li><strong>Bit significance:</strong> MSB (Most Significant Bit) = leftmost = highest power; LSB (Least Significant Bit) = rightmost = 2⁰ = 1's place.</li>
       </ul>
+      <p><em>Reading concern:</em> Overflow is silent in unsigned arithmetic. Adding 1 to 255 in 8-bit unsigned wraps to 0. Many firmware bugs come from unsigned integer overflow — your counter hits 256 but wraps to 0. Always be aware of your bit width and maximum representable value.</p>
     </div>
     <div class="card">
       <h3>BCD — Binary Coded Decimal</h3>
@@ -180,20 +215,22 @@
     <div class="card">
       <h3>Negative Numbers: 2's Complement</h3>
       <ul>
-        <li><strong>Sign-magnitude:</strong> MSB = sign bit. Simple to read; bad for arithmetic.</li>
-        <li><strong>2's Complement:</strong> N + (−N) = 0 (with overflow discarded).</li>
-        <li>Form: flip all bits, then add 1. OR: −N = −2<sup>MSB</sup> + remaining bits.</li>
-        <li>Example (4-bit): 5 = 0101; −5 = 1010+1 = 1011. Check: 0101+1011 = 10000 → 0 ✓</li>
-        <li>Both addition and multiplication work naturally.</li>
+        <li><strong>Sign-magnitude approach:</strong> Use the MSB as a sign bit (0=positive, 1=negative) and the remaining bits for magnitude. Intuitive but problematic: you have two representations of zero (+0 and −0), and addition doesn't work correctly in hardware.</li>
+        <li><strong>2's Complement (the standard):</strong> Solves the problem by making the MSB have a negative weight. The insight: N + (−N) should equal 0 in modular arithmetic. So instead of a separate sign bit, we represent negative numbers such that addition works naturally with overflow discarded.</li>
+        <li><strong>How to compute:</strong> To negate N: flip all bits (one's complement), then add 1. Alternatively, −N = −2<sup>MSB</sup> + remaining bits. For an 8-bit number, the MSB represents −128.</li>
+        <li><strong>4-bit example:</strong> Range is −8 to +7. Positive 5 = 0101. To get −5: flip bits (1010), add 1 (1011). Verify: 0101 + 1011 = 10000 (5-bit result), discard the overflow → 0000 in 4-bit space, which is 0. Correct!</li>
+        <li><strong>Why it matters:</strong> Both addition and multiplication work correctly in 2's complement without special handling. Your CPU's ALU doesn't need separate unsigned and signed circuits; the same hardware works for both.</li>
       </ul>
+      <p><em>Reading concern:</em> The MSB is special in 2's complement — it has a negative weight. Don't mix signed and unsigned: treating −5 (1011) as unsigned 11 is a logic error. Always be explicit about whether a variable is signed or unsigned in your firmware.</p>
     </div>
     <div class="card">
       <h3>Hexadecimal</h3>
       <ul>
-        <li>Base-16 — groups 4 bits into one symbol (0–9, A–F).</li>
-        <li>79₁₀ = 4F₁₆ (4=0100, F=1111).</li>
-        <li>Memory addresses, register values always shown in hex.</li>
-        <li>Embedded: 0xFF, 0x1A3F are typical firmware patterns.</li>
+        <li><strong>Base-16 notation:</strong> Groups every 4 bits into one symbol (0–9, A–F). This is the "sweet spot" for humans — binary is too verbose, decimal doesn't align with bit positions.</li>
+        <li><strong>Conversion rule:</strong> Each hex digit is exactly 4 binary bits. 0x4F means 0100 1111 in binary. Every hex digit is independent — no borrowing or carrying across digit boundaries when converting.</li>
+        <li><strong>79₁₀ example:</strong> In binary: 01001111. Group from right: 0100 1111. Convert each group: 0100=4, 1111=F. Result: 0x4F.</li>
+        <li><strong>Embedded ubiquity:</strong> Memory addresses, register values, and hardware configuration constants are always shown in hex. Example: 0xFF (all bits set to 1), 0x1A3F (specific register configuration), 0x8000 (bit 15 set). Your embedded IDE likely shows memory dumps in hex.</li>
+        <li><strong>Quick mental math:</strong> 0x100 = 256 (2⁸), 0x1000 = 4096 (2¹²), 0x10000 = 65536 (2¹⁶). Learning powers of 16 is essential for embedded work.</li>
       </ul>
       <table class="mini-table">
         <tr><th>Dec</th><th>Bin</th><th>Hex</th><th>Dec</th><th>Bin</th><th>Hex</th></tr>
@@ -201,6 +238,7 @@
         <tr><td>11</td><td>1011</td><td>B</td><td>14</td><td>1110</td><td>E</td></tr>
         <tr><td>12</td><td>1100</td><td>C</td><td>15</td><td>1111</td><td>F</td></tr>
       </table>
+      <p><em>Reading concern:</em> Always use the 0x prefix (0xFF, not FF) to distinguish hex from decimal in code and documentation. Some debuggers and tools are context-sensitive and may misinterpret an unlabeled hex number.</p>
     </div>
   </div>
 
@@ -229,6 +267,10 @@
   </div>
 
   <div class="flow-banner">🔗 Gate behavior → Boolean Algebra (Section 3) → Minimization (Section 4) → actual circuit implementation.</div>
+
+  <div class="callout">
+    <strong>Why gates matter:</strong> A gate is a small transistor network that performs a logical operation on two input voltages and produces one output. AND, OR, and NOT are universal building blocks — every combinational circuit (calculations, comparisons, decoding, multiplexing) reduces to some combination of them. The fewer gates, the less power, die area, and latency — which is why Boolean algebra and K-maps matter.
+  </div>
 
   <div class="gate-grid">
     <div class="gate-card">
@@ -353,7 +395,7 @@
   <div class="section-header">
     <span class="tag">Chapter 2</span>
     <h2>Boolean Algebra &amp; DeMorgan's Theorems</h2>
-    <p class="subtitle">Boolean algebra provides the mathematical framework to analyze, simplify, and transform logic expressions before hardware implementation.</p>
+    <p class="subtitle">Boolean algebra is the bridge between truth tables and real gate networks. It provides the mathematical framework to analyze, simplify, and transform logic expressions before hardware implementation.</p>
   </div>
 
   <div class="flow-banner">🔗 Boolean identities enable algebraic minimization (Section 4); DeMorgan's enables gate substitution crucial in NAND-only designs.</div>
@@ -385,6 +427,15 @@
           </td>
         </tr>
       </table>
+    </div>
+    <div class="card">
+      <h3>How to Read Boolean Expressions</h3>
+      <ul>
+        <li><strong>Order of operations:</strong> Parentheses first, then NOT, then AND, then OR.</li>
+        <li><strong>Example:</strong> A + BC means "A OR (B AND C)" — the AND happens before the OR.</li>
+        <li><strong>Why identities matter:</strong> Use them to remove duplicate terms and unnecessary gates. The same logic can be written many ways; simplification yields fewer transistors and lower power.</li>
+        <li><strong>Positive vs negative logic:</strong> Positive logic treats 1 as true. Negative logic flips the meanings of 1 and 0, which is why the same circuit looks different in different notations.</li>
+      </ul>
     </div>
     <div class="card">
       <h3>DeMorgan's Theorems</h3>
@@ -435,6 +486,10 @@
   </div>
 
   <div class="flow-banner">🔗 Minimized expressions feed directly into state machine logic design (Sections 7 & 6) and adder circuits.</div>
+
+  <div class="callout">
+    <strong>Why minimize?</strong> A truth table produces expressions that are correct but wasteful. For example, a 4-input function might need 8 AND gates in "sum of products" form, but careful grouping might reduce it to 2 gates. This matters enormously: fewer gates = lower power consumption, smaller chip area, and faster propagation delay. A 50% gate reduction on a million-transistor chip saves gigawatts at data center scale. Karnaugh maps let you find the best minimization by hand for functions up to 4 variables; beyond that, automated tools (Espresso, Quine-McCluskey) take over.
+  </div>
 
   <div class="card-grid">
     <div class="card">
@@ -515,18 +570,23 @@
 
   <div class="flow-banner">🔗 Flip-flops are the elementary unit of registers (Section 6), counters (Section 6), and state machines (Section 7). Every synchronous embedded system depends on them.</div>
 
+  <div class="callout">
+    <strong>The memory breakthrough:</strong> So far (Sections 1–4) every circuit's output depends only on its current input — these are combinational circuits. A flip-flop is a feedback loop of gates that <em>remembers</em> a 1-bit value until an external signal (like a clock edge) changes it. This memory is the foundation of registers (multi-bit storage), counters (sequences of states), and entire computers. Without flip-flops, digital systems would have no way to retain past values, and computation would be impossible.
+  </div>
+
   <div class="card-grid">
     <div class="card">
       <h3>SR Latch (NOR-based)</h3>
-      <p>Two cross-coupled NOR gates. Output of each feeds input of other.</p>
+      <p><strong>Structure:</strong> Two cross-coupled NOR gates. The output of each gate feeds one input of the other, creating a feedback loop that holds state.</p>
       <table class="mini-table">
         <tr><th>S</th><th>R</th><th>Q</th><th>State</th></tr>
-        <tr><td>1</td><td>0</td><td>1</td><td>Set</td></tr>
-        <tr><td>0</td><td>1</td><td>0</td><td>Reset</td></tr>
-        <tr><td>0</td><td>0</td><td>Q<sub>prev</sub></td><td>Memory</td></tr>
+        <tr><td>1</td><td>0</td><td>1</td><td>Set (Q=1)</td></tr>
+        <tr><td>0</td><td>1</td><td>0</td><td>Reset (Q=0)</td></tr>
+        <tr><td>0</td><td>0</td><td>Q<sub>prev</sub></td><td>Hold/Memory</td></tr>
         <tr><td>1</td><td>1</td><td>—</td><td class="out0">AVOID</td></tr>
       </table>
-      <p>S=R=1: both outputs forced to same value → ambiguous, forbidden.</p>
+      <p><strong>Why S=R=1 is forbidden:</strong> When both inputs are 1, both NOR outputs are forced to 0, so Q and Q̅ are identical. This violates the assumption that they are opposites. When S and R then return to 0, the latch state becomes undefined — race conditions cause Q to randomly settle to 0 or 1.</p>
+      <p><em>Reading concern:</em> The SR latch is asynchronous (responds immediately to input changes). Never let S and R both go high in real circuits, or the outcome is unpredictable. Always think: "What happens if both signals are high?" This is a design flaw that some logic must prevent.</p>
     </div>
     <div class="card">
       <h3>Debounced Switch (SR Application)</h3>
@@ -536,9 +596,10 @@
     </div>
     <div class="card">
       <h3>Clocked SR Flip-Flop</h3>
-      <p>S,R only affect output when CLK = HIGH.</p>
-      <p>Interval between CLK pulses = "retain previous" state — provides synchronization.</p>
-      <p>Key concept: <strong>information can only change in sync with clock</strong>.</p>
+      <p><strong>The improvement:</strong> Add gates to the S and R inputs so they only propagate when CLK = HIGH. This prevents unwanted state changes between clock pulses.</p>
+      <p><strong>Timing behavior:</strong> When CLK = HIGH, S and R inputs directly affect the latch (same as asynchronous SR). When CLK = LOW, the latched state is frozen regardless of S/R inputs. This provides synchronization — the entire circuit only responds at predefined clock moments.</p>
+      <p><strong>Key concept:</strong> <em>Information can only change in sync with the clock</em>. This is the foundation of synchronous digital design. Without this discipline, race conditions and metastability plague circuits.</p>
+      <p><em>Reading concern:</em> Clocked SR still has the S=R=1 problem. The combinational logic feeding S and R must ensure this never happens. Many modern designs skip SR entirely and use D flip-flops instead, which are forced to have only one active input at a time.</p>
     </div>
     <div class="card">
       <h3>D-Type Transparent Flip-Flop</h3>
@@ -549,29 +610,33 @@
     </div>
     <div class="card">
       <h3>Edge-Triggered D Flip-Flop</h3>
-      <p>Latches D only at clock edge (rising or falling), not during entire HIGH level.</p>
+      <p><strong>Why it matters:</strong> A transparent latch responds whenever CLK is HIGH — if D changes during that window, Q changes immediately, creating glitches. An edge-triggered flip-flop fixes this: it samples D only at one instant per clock cycle (the edge), then "closes the gate." D changes after the edge don't affect output until the next edge.</p>
+      <p><strong>Design:</strong> Internally uses 2–3 SR stages in a master-slave configuration. The master SR latch captures D when CLK is one level, and the slave copies the master only at the opposite clock level.</p>
+      <p><strong>Edge types:</strong></p>
       <ul>
-        <li><strong>Positive-edge:</strong> latches on LOW→HIGH transition (TTL 7474).</li>
-        <li><strong>Negative-edge:</strong> latches on HIGH→LOW transition.</li>
-        <li>Requires 2–3 coupled SR stages internally.</li>
+        <li><strong>Positive-edge (rising-edge):</strong> Triggers on LOW→HIGH transition. Most common in synchronous design (e.g., TTL 7474). Easier to visualize on scope captures.</li>
+        <li><strong>Negative-edge (falling-edge):</strong> Triggers on HIGH→LOW transition. Used when the timing works better or for inverting pipelines.</li>
       </ul>
-      <p><strong>Timing constraints:</strong></p>
+      <p><strong>Timing constraints (typical 5V TTL values):</strong></p>
       <ul>
-        <li>t<sub>setup</sub> ≈ 20ns — D must be stable before clock edge.</li>
-        <li>t<sub>hold</sub> ≈ 3ns — D must remain stable after edge.</li>
-        <li>t<sub>prop</sub> ≈ 10ns — Q appears after edge.</li>
+        <li>t<sub>setup</sub> ≈ 20ns — D must be stable and valid at least 20ns <em>before</em> the clock edge. Violate this and metastability can occur.</li>
+        <li>t<sub>hold</sub> ≈ 3ns — D must remain stable for at least 3ns <em>after</em> the edge. If D toggles too quickly, the captured value is undefined.</li>
+        <li>t<sub>prop</sub> ≈ 10ns — Q appears (propagates) approximately 10ns <em>after</em> the clock edge. This delay chains in pipelines.</li>
       </ul>
+      <p><em>Reading concern:</em> <strong>Setup and hold violations cause metastability</strong> — the flip-flop output oscillates for a brief time, settling to 0 or 1 unpredictably. At high speeds (>100MHz), matching clock and data line lengths on the PCB is critical to avoid violating t<sub>hold</sub>. Many chip failures in production trace back to timing violations that weren't caught in simulation.</p>
     </div>
     <div class="card">
       <h3>JK Flip-Flop</h3>
       <table class="mini-table">
-        <tr><th>J</th><th>K</th><th>Q<sub>n</sub></th></tr>
-        <tr><td>1</td><td>0</td><td>1 (Set)</td></tr>
-        <tr><td>0</td><td>1</td><td>0 (Reset)</td></tr>
-        <tr><td>0</td><td>0</td><td>Q<sub>n-1</sub> (Hold)</td></tr>
-        <tr><td>1</td><td>1</td><td><span class="bar">Q</span><sub>n-1</sub> (Toggle)</td></tr>
+        <tr><th>J</th><th>K</th><th>Q<sub>n</sub></th><th>Meaning</th></tr>
+        <tr><td>1</td><td>0</td><td>1</td><td>Set Q to 1</td></tr>
+        <tr><td>0</td><td>1</td><td>0</td><td>Reset Q to 0</td></tr>
+        <tr><td>0</td><td>0</td><td>Q<sub>n-1</sub></td><td>Hold previous state</td></tr>
+        <tr><td>1</td><td>1</td><td><span class="bar">Q</span><sub>n-1</sub></td><td>Toggle (invert)</td></tr>
       </table>
-      <p>J=K=1 → Toggle. Enables divide-by-2 without extra logic. Used in ripple counters.</p>
+      <p><strong>The "JK" magic:</strong> Unlike SR, when both J and K are 1, the JK toggles instead of entering an undefined state. This single feature enables divide-by-2 counters without extra logic. Connect Q̅ back to J and Q to K: on each clock edge, it inverts itself.</p>
+      <p><strong>Practical use:</strong> JK is the "Swiss Army knife" of flip-flops. Every counter design textbook uses JK because J=K=1 is always safe and the toggle mode is powerful. Modern FPGAs implement primitives directly as D or SR, then synthesize JK behavior from them, but understanding JK thinking helps with digital design intuition.</p>
+      <p><em>Reading concern:</em> The toggle mode (J=K=1) hides a race condition in transparent latches: if J and K are both 1 and CLK stays HIGH, Q toggles repeatedly, not just once. Edge-triggered JK flip-flops avoid this because they only sample at the edge. Always verify your datasheet specifies edge-triggered unless you want continuous toggling.</p>
     </div>
   </div>
 
@@ -609,10 +674,11 @@
     </div>
     <div class="card">
       <h3>Asynchronous (Ripple) Counter</h3>
-      <p>Chain of flip-flops: each FF clocked by output of previous.</p>
-      <p>4-bit ripple counter: FF₀ clocked by input, FF₁ by Q₀, FF₂ by Q₁, FF₃ by Q₂.</p>
-      <p><strong>Problem:</strong> LSB and MSB process different input pulses at high speed — ripple delay accumulates.</p>
-      <p>At high frequency: intermediate states create glitches (spurious decode outputs).</p>
+      <p><strong>Structure:</strong> Chain flip-flops such that the output Q of one FF clocks the input of the next. FF₀ counts the input pulses and toggles at half the rate. FF₁ counts FF₀'s output and toggles at 1/4 the rate. And so on.</p>
+      <p><strong>Example (4-bit):</strong> Input pulses clock FF₀ directly. FF₀'s Q output clocks FF₁. FF₁'s Q clocks FF₂. FF₂'s Q clocks FF₃. Result: a 4-bit binary counter (0→ 1→ 2→...15→ 0).</p>
+      <p><strong>The critical problem — ripple delay:</strong> When you increment the counter, FF₀ toggles immediately. This change must propagate to FF₁ before FF₁ can toggle. Then FF₁'s change must reach FF₂, and so on. The MSB doesn't stabilize until 3–4 flip-flop delays have passed (roughly 30–40ns in old TTL logic). During this time, the intermediate states (0→ 8, then later 9→ 15) are visible briefly.</p>
+      <p><strong>Why this is bad:</strong> If your logic decodes counter states (e.g., "when counter = 10, fire interrupt"), the ripple causes spurious intermediate decodings (e.g., 10→ 2→ 10 due to propagation delays). These glitches cause state machine errors or false triggers. At 100 MHz or faster, ripple delays become a significant fraction of a clock period.</p>
+      <p><em>Reading concern:</em> Ripple counters are pedagogically useful but are rarely used in production circuits. Modern designs use <strong>synchronous counters</strong> where all FF's share the same clock and combinational logic predicts which bits toggle next, ensuring all bits change at the same time (within propagation delay of the combinational logic, not flip-flops). Synchronous is slower to design but much more reliable. Always avoid ripple counters in real embedded systems unless you have very slow clocks (<1 MHz) and no critical timing needs.</p>
     </div>
     <div class="card">
       <h3>4-bit Data Register</h3>
@@ -622,13 +688,16 @@
     </div>
     <div class="card">
       <h3>Shift Register</h3>
-      <p>Chain of flip-flops: each Q feeds D of the next.</p>
-      <p>Each CLK cycle shifts data one position right.</p>
+      <p><strong>Structure:</strong> A chain of D flip-flops where the Q output of one FF feeds the D input of the next FF. All FFs share the same CLK.</p>
+      <p><strong>Operation:</strong> On each clock edge, data "shifts" one position through the chain. If you input serial bits on the first FF's D input, after N clock cycles they appear in parallel at all N FF outputs.</p>
+      <p><strong>Use cases:</strong></p>
       <ul>
-        <li><strong>Serial→Parallel:</strong> 4 serial bits in → 4 parallel bits Q₀–Q₃ after 4 clocks.</li>
-        <li><strong>Parallel→Serial:</strong> load 4 bits, shift out one per clock.</li>
+        <li><strong>Serial-to-Parallel conversion:</strong> 4 serial bits arrive one per clock cycle. After 4 clocks, all 4 bits are captured in parallel at Q₃Q₂Q₁Q₀. This is how UART receivers work: serial data bits are shifted in, and after 10 clocks (including start and stop bits), a complete byte is assembled.</li>
+        <li><strong>Parallel-to-Serial conversion:</strong> Load all 4 bits simultaneously (using jam/async set/reset pins or a multiplexer). Then shift them out serially, one bit per clock. Used in SPI transmitters and UART transmitters.</li>
+        <li><strong>Barrel shifting:</strong> Combine with multiplexers to rotate data by variable amounts, useful for bit-field extraction and DSP algorithms.</li>
       </ul>
-      <p><em>Embedded: SPI interface is fundamentally a shift register. UART uses shift registers for framing.</em></p>
+      <p><strong>Embedded applications:</strong> SPI interface on any microcontroller is fundamentally a pair of shift registers (one RX, one TX). UART also uses shift registers internally. Many industrial communication protocols (CAN, I²S) rely on shift registers at the physical layer.</p>
+      <p><em>Reading concern:</em> Shift register timing depends on the clock frequency. At very high speeds (>50 MHz), the capacitive loading of long shift chains can cause timing violations. Design tools must verify setup and hold times are met across all stages. Also, shift register behavior is sequential (N clocks for N bits), so low throughput compared to parallel buses, but uses only one or two signal lines, saving PCB routing.</p>
     </div>
   </div>
 
@@ -651,6 +720,10 @@
   </div>
 
   <div class="flow-banner">🔗 State machines unify all previous concepts: flip-flops (memory), Boolean logic (next-state logic), K-maps (minimization). Replacing logic with ROM → microprocessor (Section 9).</div>
+
+  <div class="callout">
+    <strong>The big picture:</strong> A state machine is the most general digital pattern. At each clock cycle, the machine reads current state and inputs, computes the next state using combinational logic, and transitions. Build a state machine for a traffic light. Scale it to handle 10 inputs and output 20 signals. Replace the logic gates with a lookup table (ROM). Feed the ROM an address computed from state + inputs, read back the next state and outputs. Now scale again: the ROM becomes program memory, the state register becomes a program counter, the inputs become instruction bits. This is a microprocessor. Every CPU in the world is a very large, very fast state machine executing a program stored in ROM.
+  </div>
 
   <div class="card-grid">
     <div class="card">
@@ -730,15 +803,21 @@
 
   <div class="flow-banner">🔗 ADC resolution links to binary number representation (Section 1). SAR ADC uses counters (Section 6) and comparator logic. DAC uses op-amp inverting configuration (power section concepts).</div>
 
+  <div class="callout">
+    <strong>Why ADC/DAC matter:</strong> Real-world signals (temperature, sound, voltage) are analog — continuous. Digital processors work with bits — discrete values. ADCs convert analog → digital (sampling + quantization), and DACs convert digital → analog (lookup + filtering). The two key trade-offs: (1) <strong>resolution</strong> (how many bits?) — affects accuracy; (2) <strong>sampling rate</strong> (how many samples per second?) — must be ≥ 2× the highest frequency present, or aliasing destroys the signal. A microphone samples at 44kHz, a medical ECG at 1kHz, industrial vibration sensors at 10kHz. Choosing the wrong ADC for a job wastes power, misses fast events, or adds unnecessary latency.
+  </div>
+
   <div class="card-grid">
     <div class="card">
       <h3>A/D Resolution</h3>
       <ul>
-        <li>n-bit ADC → 2ⁿ discrete levels.</li>
-        <li>Resolution = 1/(2·2ⁿ) of full range. Example: 12-bit → 1/8192 ≈ 0.012%.</li>
-        <li><strong>Nyquist Theorem:</strong> f<sub>samp</sub> > 2·f<sub>max</sub>. Audio (20kHz) → sample at ≥40kHz (standard: 44kHz).</li>
-        <li>Undersampling causes aliasing — high-frequency content folds into baseband.</li>
+        <li><strong>Discrete levels:</strong> An n-bit ADC divides the input range into 2ⁿ equally-spaced quantization levels. Each level represents one unique binary code.</li>
+        <li><strong>Resolution (LSB size):</strong> If the full range is 0–10V and you have 12 bits, the LSB = 10V / 2¹² = 10V / 4096 ≈ 2.44mV. Each ADC count change represents 2.44mV.</li>
+        <li><strong>Accuracy vs resolution:</strong> Resolution is the <em>theoretical</em> smallest distinguishable voltage. Accuracy is the real-world error due to nonlinearity, offset, temperature drift, etc. A 12-bit ADC has 12-bit resolution but may only achieve 10-bit accuracy due to circuit imperfections.</li>
+        <li><strong>Nyquist Theorem:</strong> To faithfully capture a signal with highest frequency f<sub>max</sub>, sample at f<sub>samp</sub> > 2·f<sub>max</sub>. Audio (20kHz max) requires >40kHz (CD standard: 44.1kHz). Violate Nyquist and high frequencies "fold" into the audible range (aliasing), corrupting the signal irreversibly.</li>
+        <li><strong>Anti-aliasing filter:</strong> In practice, place a low-pass filter before the ADC to remove all frequencies above f<sub>max</sub>. Without it, noise and out-of-band signals alias into your measurement band and ruin data quality.</li>
       </ul>
+      <p><em>Reading concern:</em> Resolution is not accuracy. A 16-bit ADC looks impressive on a datasheet but is useless if 4 of those bits are noise. Always read the "Signal-to-Noise Ratio (SNR)" and "Effective Number of Bits (ENOB)" columns in datasheets to know the real resolution. Also, quantization error is unavoidable: every conversion introduces ±0.5 LSB error. For 12-bit, 10V range: ±1.2mV error is inherent.</p>
     </div>
     <div class="card">
       <h3>DAC — R-2R Ladder</h3>
@@ -759,14 +838,18 @@
     </div>
     <div class="card">
       <h3>Successive Approximation (SAR) ADC</h3>
-      <p>Binary search algorithm over n clock cycles for n-bit result.</p>
+      <p><strong>The algorithm:</strong> SAR uses a binary search to find the digital code that matches the input voltage. Start with the MSB set to 1; if the resulting DAC output is too high, clear that bit. Move to the next bit and repeat. In n clock cycles, you have the result.</p>
+      <p><strong>Detailed example (8-bit, 0–10V, V<sub>in</sub>=7.09V):</strong></p>
       <ol>
-        <li>Start: set MSB=1, all others 0. Convert to analog via DAC.</li>
-        <li>Compare to V<sub>in</sub>: if DAC > V<sub>in</sub>, clear bit; else keep.</li>
-        <li>Move to next bit. Repeat n times.</li>
+        <li>Cycle 1: Try MSB=1 (code 10000000). DAC outputs 5V. Compare: 5V < 7.09V, so keep MSB=1.</li>
+        <li>Cycle 2: Try next bit=1 (code 11000000). DAC outputs 7.5V. Compare: 7.5V > 7.09V, so clear bit. Code is now 10000000.</li>
+        <li>Cycle 3: Try bit 5 (code 10100000). DAC outputs 6.25V. Compare: 6.25V < 7.09V, so keep. Code is now 10100000.</li>
+        <li>...continue for 5 more cycles...</li>
+        <li>Final result (approximately): 10110100₂ = 180₁₀, which maps to 7.03V (close to input).</li>
       </ol>
-      <p>Example (8-bit, 0–10V, V<sub>in</sub>=7.09V): converges in exactly 8 clock cycles.</p>
-      <p><strong>Embedded:</strong> most microcontroller ADCs (STM32, AVR, PIC) use SAR. Typical: 12-bit, 1 MSPS.</p>
+      <p><strong>Speed and power:</strong> Conversion time is fixed at n clock cycles (8 clocks for 8-bit, 12 for 12-bit). No variable latency unlike flash. Power consumption is moderate. This is why almost every microcontroller (STM32, AVR, PIC, ESP32) includes a SAR ADC: good speed, good resolution, low power, low cost.</p>
+      <p><strong>Typical specs:</strong> STM32L4 ADC: 12-bit resolution, 1 MSPS (1 million samples/sec), ±2.5% accuracy, <4µA in sleep mode.</p>
+      <p><em>Reading concern:</em> SAR ADC requires an external holding capacitor on the input (acquisition capacitor) to stabilize the voltage during conversion. If you switch inputs rapidly between samples, charge redistribution errors (pedestal errors) degrade accuracy. Also, the internal DAC noise directly affects linearity, so supply bypassing is critical.</p>
     </div>
     <div class="card">
       <h3>Single/Dual Slope ADC</h3>
@@ -778,12 +861,14 @@
     <div class="card">
       <h3>ADC Comparison for Embedded Design</h3>
       <table class="mini-table">
-        <tr><th>Type</th><th>Speed</th><th>Accuracy</th><th>Cost</th></tr>
-        <tr><td>Flash</td><td>Fastest</td><td>Low–Med</td><td>High</td></tr>
-        <tr><td>SAR</td><td>Medium</td><td>High</td><td>Low</td></tr>
-        <tr><td>Sigma-Delta</td><td>Slow</td><td>Highest</td><td>Medium</td></tr>
-        <tr><td>Dual Slope</td><td>Slowest</td><td>Very High</td><td>Low</td></tr>
+        <tr><th>Type</th><th>Speed</th><th>Accuracy</th><th>Cost</th><th>Best For</th></tr>
+        <tr><td>Flash</td><td>Fastest (parallel)</td><td>Low–Med</td><td>High</td><td>High-speed applications (oscilloscopes, radar, video)</td></tr>
+        <tr><td>SAR</td><td>Medium (n cycles)</td><td>High</td><td>Low</td><td><strong>Most embedded</strong> (µcontrollers, sensors)</td></tr>
+        <tr><td>Sigma-Delta</td><td>Slow (oversampling)</td><td>Highest</td><td>Medium</td><td>Audio, precision instrumentation (>16-bit needed)</td></tr>
+        <tr><td>Dual Slope</td><td>Very slow</td><td>Extreme</td><td>Low</td><td>Multimeters, calibration labs (noise rejection)</td></tr>
       </table>
+      <p><strong>Trade-off reasoning:</strong> Flash is simple (N comparators = N clock cycles) but wastes silicon and power on high-bit versions (256 comparators for 8-bit is a lot). SAR is clever: it reuses one DAC and comparator, so it scales well. Sigma-delta over-samples at 64–256× the target rate and uses digital filters to achieve extremely high accuracy; the oversampling noise-shapes quantization error out of the band of interest. Each has a place.</p>
+      <p><em>Reading concern:</em> When choosing an ADC, consider: (1) Required resolution (8, 10, 12, 14, 16 bits?); (2) Maximum input frequency (how fast does your signal change?); (3) Required sampling rate (Nyquist theorem); (4) Power budget (battery-powered or bench?); (5) Cost and PCB space. Grabbing the "best" (sigma-delta) when SAR suffices wastes power and cost. SAR dominates because it's the "Goldilocks" solution for most embedded problems.</p>
     </div>
   </div>
 
@@ -815,32 +900,44 @@
 
   <div class="flow-banner">🔗 Memory = registers (Section 6) + MUX/DEMUX (Section 4) + flip-flops (Section 5). ROM state machine (Section 7) generalizes to full processor.</div>
 
+  <div class="callout">
+    <strong>The hierarchy and why it matters:</strong> A processor fetches instructions from program memory, stores temporary values in registers and cache, and can access slower main memory when needed. Each level is faster but smaller: registers (0.1ns) beat cache (1ns) beat DRAM (100ns) beat flash (10ms). An embedded designer chooses: put critical data in registers; let the CPU cache hot loops; spill to DRAM if needed. Understanding memory speed hierarchy is how you optimize firmware for real-time performance — it is the difference between a responsive embedded system and one that misses deadlines.
+  </div>
+
   <div class="card-grid">
     <div class="card">
       <h3>Memory Types</h3>
       <table class="mini-table">
-        <tr><th>Type</th><th>Read</th><th>Write</th><th>Volatile</th></tr>
-        <tr><td>SRAM</td><td>✓</td><td>✓</td><td>Yes</td></tr>
-        <tr><td>DRAM</td><td>✓</td><td>✓</td><td>Yes (needs refresh)</td></tr>
-        <tr><td>ROM</td><td>✓</td><td>✗</td><td>No</td></tr>
-        <tr><td>PROM</td><td>✓</td><td>Once (fuse)</td><td>No</td></tr>
-        <tr><td>EPROM</td><td>✓</td><td>UV erase</td><td>No</td></tr>
-        <tr><td>EEPROM/Flash</td><td>✓</td><td>Electrically</td><td>No</td></tr>
+        <tr><th>Type</th><th>Read</th><th>Write</th><th>Volatile</th><th>Use Case</th></tr>
+        <tr><td>SRAM</td><td>✓</td><td>✓</td><td>Yes</td><td>CPU cache, registers, temp storage</td></tr>
+        <tr><td>DRAM</td><td>✓</td><td>✓</td><td>Yes (refresh)</td><td>System RAM (PCs, phones)</td></tr>
+        <tr><td>ROM</td><td>✓</td><td>✗</td><td>No</td><td>Factory-programmed constants, boot code</td></tr>
+        <tr><td>PROM</td><td>✓</td><td>Once (fuse)</td><td>No</td><td>Field-programmable (one-time)</td></tr>
+        <tr><td>EPROM</td><td>✓</td><td>UV erase</td><td>No</td><td>Reusable in lab, UV eraser needed</td></tr>
+        <tr><td>EEPROM/Flash</td><td>✓</td><td>Elec</td><td>No</td><td>Embedded program storage, config data</td></tr>
       </table>
+      <p><strong>Key concept:</strong> Volatility means the data is lost when power is removed. Non-volatile memory persists. The trade-off: volatile memory is faster and uses fewer transistors per bit, but your program and constants must live in non-volatile storage (flash) and be copied to volatile RAM at startup.</p>
+      <p><em>Reading concern:</em> Don’t confuse "writable" with "reusable." PROM is writable but only once: fuses are blown and cannot be restored. EPROM is truly reusable but requires a UV eraser (not practical for field updates). Flash is electrically erasable and rewritable millions of times, making it the only practical choice for modern embedded systems.</p>
     </div>
     <div class="card">
       <h3>SRAM vs DRAM</h3>
       <ul>
-        <li><strong>SRAM:</strong> Flip-flop array. Faster (~10ns). No refresh needed. More area per bit. Used for cache, embedded scratch RAM.</li>
-        <li><strong>DRAM:</strong> Capacitor array. Slower. Needs refresh every ~1ms (charge leaks). Higher density, cheaper per bit. Used for main system RAM.</li>
+        <li><strong>SRAM (Static RAM):</strong> Each bit is a flip-flop (or cross-coupled gates). Requires 4–6 transistors per bit. Data stays valid as long as power is on (no refresh needed). Fast: ~10ns access. Used for: CPU caches (L1, L2, L3), embedded scratch RAM, register files. Expensive per bit and large footprint, so limited to small amounts (kilobytes to low megabytes in embedded systems).</li>
+        <li><strong>DRAM (Dynamic RAM):</strong> Each bit is a single transistor + capacitor. Capacitor holds a charge (1) or is empty (0), but charge leaks over milliseconds. Must refresh every ~1ms (read and re-write each row). Slower: ~100ns access. But much denser: ~1 transistor per bit. Used for: main system RAM in PCs, phones, servers. Cheap per bit, so practical for gigabytes. The refresh overhead is hidden by intelligent memory controllers that refresh in parallel with other operations.</li>
       </ul>
+      <p><strong>Why the difference matters:</strong> You have a finite cache budget (SRAM is expensive). For every MB of SRAM, you lose 1-5MB of potential DRAM. Modern systems carefully balance: SRAM for hottest code/data (inner loops, critical data structures), DRAM for the rest. Firmware optimized for cache locality (keeping working set small) runs 2-3x faster than random-access firmware.</p>
+      <p><em>Reading concern:</em> DRAM refresh and SRAM static power consumption both matter for battery-powered devices. In sleep mode, DRAM consumes little (refresh can be slowed). SRAM sips current continuously. For always-on IoT devices, total power includes standby power, not just active power. This is why datasheets list "typical power consumption" at various clock speeds and duty cycles.</p>
     </div>
     <div class="card">
       <h3>RAM Organization</h3>
-      <p>8×1 RAM structure: DEMUX (write path) + D flip-flops (storage) + MUX (read path) + 3-state buffer (output).</p>
-      <p>External signals: Address (a₂a₁a₀), Data In, WE (write enable), OE (output enable), Data Out.</p>
-      <p><strong>Write:</strong> assert address + data + WE → DEMUX selects FF → FF latches data.</p>
-      <p><strong>Read:</strong> assert address + OE → MUX selects FF output → 3-state buffer drives bus.</p>
+      <p><strong>8×1 RAM architecture (1 byte, 8 locations):</strong></p>
+      <ul>
+        <li><strong>Write path:</strong> Address bits (a₂a₁a₀) feed a DEMUX that selects one of 8 flip-flops. Data In is connected to the D inputs of all FFs. When WE (write enable) is asserted, only the selected FF latches Data In.</li>
+        <li><strong>Read path:</strong> Address bits feed an 8-to-1 MUX that selects one FF output. That output feeds a 3-state (tri-state) buffer, which drives Data Out when OE (output enable) is asserted. Three-state logic allows multiple devices to share a bus: only the buffer with OE=1 drives the line; others are high-impedance (disconnected).</li>
+      </ul>
+      <p><strong>Key signals:</strong> Address (log₂N bits for N locations), Data In/Out (W bits for W-bit words), WE (write enable), OE (output enable), CS (chip select, not always shown), VSS/VDD (ground and power).</p>
+      <p><strong>Access sequence:</strong> Stable address → wait for setup time → assert WE or OE → valid data appears after propagation delay → deassert WE/OE.</p>
+      <p><em>Reading concern:</em> RAM timing must be considered in synchronous designs. If your state machine provides address at clock edge 0 but the RAM data doesn’t appear until edge 1+propagation delay, you may miss or fetch stale data. Always check timing diagrams in the datasheet. Also, the CS (chip select) signal is critical for multi-chip systems: only one chip should be active at a time to avoid bus conflicts.</p>
     </div>
     <div class="card">
       <h3>Memory Capacity &amp; Addressing</h3>
